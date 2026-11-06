@@ -12,23 +12,37 @@ function getBaseRef() {
 }
 
 
-function ensureWorktree() {
+function ensureWorktree(requestedName) {
   const repoRoot = execSync('git rev-parse --show-toplevel', { encoding: 'utf8' }).trim();
-  const worktreeDir = path.join(repoRoot, 'worktrees', 'auto');
 
-  // If the worktree directory does not exist, or is not yet a git worktree, create it using the current commit SHA as a detached HEAD
+  // If we are already inside a worktree that is NOT the main repository, keep using it
   try {
-    // Does the directory exist and contain a git worktree?
-    execSync(`git -C "${worktreeDir}" rev-parse --is-inside-work-tree`, { stdio: 'ignore' });
-    // It's already a valid worktree – nothing to do
+    execSync('git rev-parse --is-inside-work-tree', { stdio: 'ignore' });
+    const worktreeRoot = execSync('git rev-parse --show-toplevel', { encoding: 'utf8' }).trim();
+    if (worktreeRoot !== repoRoot) {
+      process.chdir(worktreeRoot);
+      return;
+    }
+    // If worktreeRoot === repoRoot, we are in the main repo – fall through to create a new worktree
   } catch {
-    // Either the directory is missing or not a worktree; create it
-    const baseRef = getBaseRef();
-    execSync(`git worktree add --force "${worktreeDir}" "${baseRef}"`, { stdio: 'ignore' });
+    // Not inside any worktree – proceed to create one
   }
 
+  // Determine the name to use: task name (env TASK_NAME) > provided name > generic fallback
+  let name = process.env.TASK_NAME || requestedName;
+  if (!name) {
+    name = 'wt-change';
+  }
+  // Sanitize to a valid Git ref (lowercase, alphanumerics, hyphens)
+  const branchName = name.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-');
+
+  const worktreeDir = path.join(repoRoot, 'worktrees', branchName);
+
+  // Create the worktree on the branch (Git creates or resets the branch)
+  execSync(`git worktree add -B "${branchName}" "${worktreeDir}"`, { stdio: 'ignore' });
 
   process.chdir(worktreeDir);
+  return branchName;
 }
 
 module.exports = { ensureWorktree };
