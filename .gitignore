@@ -1,2 +1,6 @@
 # Ignore generated worktrees
 worktrees/
+
+# Node dependencies and test output
+node_modules/
+coverage/

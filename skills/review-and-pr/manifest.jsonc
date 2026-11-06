@@ -1,0 +1,7 @@
+{
+  "name": "review-and-pr",
+  "description": "After changes are ready, asks the user to confirm, then commits, pushes and opens a PR to main.",
+  "events": {
+    "on_ready": "review-pr.js"
+  }
+}
