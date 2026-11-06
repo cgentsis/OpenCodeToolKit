@@ -1,48 +1,119 @@
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
+const fs = require('fs');
 const path = require('path');
 
-function getBaseRef() {
-  // Use the current commit SHA so we never conflict with an existing branch worktree
+function runGit(args, opts = {}) {
+  return execFileSync('git', args, opts);
+}
+
+function git(args, opts = {}) {
+  return runGit(args, { encoding: 'utf8', ...opts }).trim();
+}
+
+function isInsideGitRepo() {
   try {
-    return execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
+    execFileSync('git', ['rev-parse', '--is-inside-work-tree'], { stdio: 'ignore' });
+    return true;
   } catch {
-    // Fallback to main branch name if rev-parse fails (unlikely)
-    return 'main';
+    return false;
   }
 }
 
+function getRepoRoot() {
+  return git(['rev-parse', '--show-toplevel']);
+}
 
-function ensureWorktree(requestedName) {
-  const repoRoot = execSync('git rev-parse --show-toplevel', { encoding: 'utf8' }).trim();
+function isLinkedWorktree() {
+  const gitDir = path.resolve(git(['rev-parse', '--git-dir']));
+  const commonDir = path.resolve(git(['rev-parse', '--git-common-dir']));
+  return gitDir !== commonDir;
+}
 
-  // If we are already inside a worktree that is NOT the main repository, keep using it
-  try {
-    execSync('git rev-parse --is-inside-work-tree', { stdio: 'ignore' });
-    const worktreeRoot = execSync('git rev-parse --show-toplevel', { encoding: 'utf8' }).trim();
-    if (worktreeRoot !== repoRoot) {
-      process.chdir(worktreeRoot);
-      return;
+function getCurrentBranchName() {
+  const branch = git(['rev-parse', '--abbrev-ref', 'HEAD']);
+  return branch === 'HEAD' ? null : branch;
+}
+
+function listWorktrees() {
+  const output = git(['worktree', 'list', '--porcelain']);
+  const worktrees = [];
+  let current = {};
+
+  for (const line of output.split('\n')) {
+    if (line.startsWith('worktree ')) {
+      current.path = line.slice('worktree '.length);
+    } else if (line.startsWith('branch ')) {
+      current.branch = line.slice('branch '.length).replace(/^refs\/heads\//, '');
+    } else if (line.startsWith('HEAD ')) {
+      current.head = line.slice('HEAD '.length);
+    } else if (line === '') {
+      if (current.path) worktrees.push(current);
+      current = {};
     }
-    // If worktreeRoot === repoRoot, we are in the main repo – fall through to create a new worktree
-  } catch {
-    // Not inside any worktree – proceed to create one
   }
 
-  // Determine the name to use: task name (env TASK_NAME) > provided name > generic fallback
-  let name = process.env.TASK_NAME || requestedName;
-  if (!name) {
-    name = 'wt-change';
+  if (current.path) worktrees.push(current);
+  return worktrees;
+}
+
+function branchExists(branchName) {
+  try {
+    execFileSync('git', ['show-ref', '--verify', '--quiet', `refs/heads/${branchName}`], {
+      stdio: 'ignore',
+    });
+    return true;
+  } catch {
+    return false;
   }
-  // Sanitize to a valid Git ref (lowercase, alphanumerics, hyphens)
-  const branchName = name.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-');
+}
+
+function sanitizeBranchName(name) {
+  const sanitized = (name || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/[-\s]+/g, '-');
+  return sanitized || 'wt-change';
+}
+
+function ensureWorktree(requestedName, options = {}) {
+  if (!isInsideGitRepo()) {
+    throw new Error('Not inside a git repository');
+  }
+
+  if (isLinkedWorktree()) {
+    return getCurrentBranchName();
+  }
+
+  const repoRoot = getRepoRoot();
+  const name = options.name || process.env.TASK_NAME || requestedName;
+  const branchName = sanitizeBranchName(name);
+  const existing = listWorktrees().find((worktree) => worktree.branch === branchName);
+
+  if (existing) {
+    process.chdir(existing.path);
+    return branchName;
+  }
 
   const worktreeDir = path.join(repoRoot, 'worktrees', branchName);
+  if (fs.existsSync(worktreeDir)) {
+    throw new Error(`Worktree directory already exists but is not registered: ${worktreeDir}`);
+  }
 
-  // Create the worktree on the branch (Git creates or resets the branch)
-  execSync(`git worktree add -B "${branchName}" "${worktreeDir}"`, { stdio: 'ignore' });
+  fs.mkdirSync(path.dirname(worktreeDir), { recursive: true });
+
+  const baseRef = options.baseRef || process.env.BASE_REF || 'HEAD';
+  if (branchExists(branchName)) {
+    runGit(['worktree', 'add', worktreeDir, branchName], { cwd: repoRoot, stdio: 'inherit' });
+  } else {
+    runGit(['worktree', 'add', '-b', branchName, worktreeDir, baseRef], {
+      cwd: repoRoot,
+      stdio: 'inherit',
+    });
+  }
 
   process.chdir(worktreeDir);
   return branchName;
 }
 
-module.exports = { ensureWorktree };
+module.exports = { ensureWorktree, sanitizeBranchName, listWorktrees };

@@ -2,7 +2,14 @@
 const { execSync } = require('child_process');
 const path = require('path');
 
-// Ensure we are at the repository root, then invoke the review‑and‑PR skill
-const repoRoot = execSync('git rev-parse --show-toplevel', { encoding: 'utf8' }).trim();
-process.chdir(repoRoot);
-require(path.join(repoRoot, 'skills', 'review-and-pr', 'review-pr.js')).run();
+async function main() {
+  const repoRoot = execSync('git rev-parse --show-toplevel', { encoding: 'utf8' }).trim();
+  process.chdir(repoRoot);
+  const { run } = require(path.join(repoRoot, 'skills', 'review-and-pr', 'review-pr.js'));
+  await run();
+}
+
+main().catch((error) => {
+  console.error(`❌ ${error.message}`);
+  process.exitCode = 1;
+});

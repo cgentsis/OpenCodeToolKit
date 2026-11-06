@@ -1,119 +1,195 @@
-// review-pr.js – robust, configurable review‑and‑PR helper
-const { execSync } = require('child_process');
-const path = require('path');
-let question;
-// Try to import the OpenCode SDK question helper; fall back to a simple prompt later.
-try {
-  ({ question } = require('openai'));
-} catch (_) {
-  // SDK not available – interactive mode will be disabled.
+const { execFileSync } = require('child_process');
+const readline = require('readline');
+
+function log(message) {
+  console.log(message);
 }
 
-/**
- * Determine the current branch name.
- * Works for both normal repositories and git worktrees.
- * Returns a string with the branch/worktree name, or null on failure.
- */
 function getCurrentBranch() {
-  const cwd = process.cwd();
-  const gitPath = path.join(cwd, '.git');
-  const fs = require('fs');
-
-  // Worktree case – .git is a plain file.
-  if (fs.existsSync(gitPath) && fs.statSync(gitPath).isFile()) {
-    // In a worktree the directory name is the branch name.
-    return path.basename(cwd);
-  }
-
-  // Normal repo – ask git for the current branch.
   try {
-    return execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
+    const branch = execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+      encoding: 'utf8',
+    }).trim();
+    return branch === 'HEAD' ? null : branch;
   } catch {
     return null;
   }
 }
 
-/** Execute a command and exit on failure, printing a clear error. */
-function execOrFail(cmd, opts = {}) {
+function branchExists(branch) {
   try {
-    return execSync(cmd, opts);
-  } catch (e) {
-    console.error(`❌ Command failed: ${cmd}\n${e.message}`);
-    process.exit(1);
+    execFileSync('git', ['rev-parse', '--verify', `refs/heads/${branch}`], { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
   }
 }
 
-function commitAll(message) {
-  execOrFail('git add .', { stdio: 'ignore' });
-  execOrFail(`git commit -m "${message}"`, { stdio: 'ignore' });
+function hasChanges(paths = []) {
+  const args = ['status', '--porcelain'];
+  if (paths.length) args.push('--', ...paths);
+  return execFileSync('git', args, { encoding: 'utf8' }).trim().length > 0;
 }
 
-/**
- * Push the branch and open a PR via the GitHub CLI.
- * Generates a helpful PR body from the last commit message.
- */
-function pushAndCreatePR(branch, baseBranch) {
-  // Idempotent push – create the upstream on first run, otherwise just push.
-  execOrFail(`git push --set-upstream origin ${branch} || git push origin ${branch}`, { stdio: 'ignore' });
-
-  // Build PR description from the most recent commit message.
-  let body = '';
-  try {
-    body = execSync('git log -1 --pretty=%B', { encoding: 'utf8' }).trim();
-  } catch (_) {
-    body = 'Auto‑generated PR';
+function commitChanges({ message, paths = [], dryRun = false, verbose = false }) {
+  if (!hasChanges(paths)) {
+    log('No changes to commit; skipping commit.');
+    return false;
   }
 
-  execOrFail(
-    `gh pr create --title "${branch}" --base ${baseBranch} --head ${branch} --body "${body.replace(/"/g, '\\"')}"`,
-    { stdio: 'inherit' }
-  );
+  const addArgs = paths.length ? ['add', '--', ...paths] : ['add', '.'];
+  const commitArgs = ['commit', '-m', message];
+
+  if (dryRun) {
+    log(`[dry-run] git ${addArgs.join(' ')}`);
+    log(`[dry-run] git ${commitArgs.join(' ')}`);
+    return true;
+  }
+
+  if (verbose) log(`git ${addArgs.join(' ')}`);
+  execFileSync('git', addArgs, { stdio: 'ignore' });
+  if (verbose) log(`git ${commitArgs.join(' ')}`);
+  execFileSync('git', commitArgs, { stdio: 'ignore' });
+  return true;
+}
+
+function pushBranch(branch, { dryRun = false, verbose = false } = {}) {
+  const args = ['push', '--set-upstream', 'origin', branch];
+
+  if (dryRun) {
+    log(`[dry-run] git ${args.join(' ')}`);
+    return;
+  }
+
+  if (verbose) log(`git ${args.join(' ')}`);
+  execFileSync('git', args, { stdio: 'inherit' });
+}
+
+function getCommitField(format) {
+  try {
+    return execFileSync('git', ['log', '-1', `--pretty=${format}`], {
+      encoding: 'utf8',
+    }).trim();
+  } catch {
+    return '';
+  }
+}
+
+function ensureGhAuthenticated() {
+  try {
+    execFileSync('gh', ['auth', 'status'], { stdio: 'ignore' });
+  } catch {
+    throw new Error('GitHub CLI (gh) is not installed or not authenticated. Run "gh auth login".');
+  }
+}
+
+function findOpenPr(branch) {
+  try {
+    const output = execFileSync(
+      'gh',
+      ['pr', 'list', '--head', branch, '--state', 'open', '--json', 'url', '--limit', '1'],
+      { encoding: 'utf8' }
+    ).trim();
+    if (!output) return null;
+    const items = JSON.parse(output);
+    return items.length ? items[0].url : null;
+  } catch (error) {
+    throw new Error(`Unable to check for an existing PR: ${error.message}`);
+  }
+}
+
+function createPr({ branch, baseBranch, title, body, dryRun = false, verbose = false }) {
+  const existing = findOpenPr(branch);
+  if (existing) {
+    log(`Open PR already exists: ${existing}`);
+    return existing;
+  }
+
+  const args = [
+    'pr',
+    'create',
+    '--title',
+    title,
+    '--base',
+    baseBranch,
+    '--head',
+    branch,
+    '--body-file',
+    '-',
+  ];
+
+  if (dryRun) {
+    log(`[dry-run] gh ${args.join(' ')} (body via stdin)`);
+    return null;
+  }
+
+  if (verbose) log(`gh ${args.join(' ')} (body via stdin)`);
+
+  const url = execFileSync('gh', args, { input: body, encoding: 'utf8' }).trim();
+  log(`PR created: ${url}`);
+  return url;
+}
+
+function askYesNo(message) {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    rl.question(`${message} (y/N) `, (answer) => {
+      rl.close();
+      resolve(/^y(es)?$/i.test(answer.trim()));
+    });
+  });
 }
 
 async function run(options = {}) {
-  const branch = options.branch || getCurrentBranch();
-  if (!branch) {
-    console.error('Unable to determine current branch or worktree name.');
-    process.exit(1);
-  }
+  const branch = options.branch || process.env.BRANCH || getCurrentBranch();
+  if (!branch) throw new Error('Unable to determine current branch or worktree name.');
+  if (!branchExists(branch)) throw new Error(`Branch "${branch}" does not exist.`);
 
   const baseBranch = options.baseBranch || process.env.BASE_BRANCH || 'main';
-  const commitMsg = options.commitMsg || `Auto‑generated commit for ${branch}`;
+  const commitMsg =
+    options.commitMsg || process.env.COMMIT_MSG || `Auto-generated commit for ${branch}`;
   const autoApprove =
     options.autoApprove !== undefined
       ? options.autoApprove
       : process.env.AUTO_PR && process.env.AUTO_PR.toLowerCase() === 'yes';
+  const dryRun =
+    options.dryRun || (process.env.DRY_RUN && process.env.DRY_RUN.toLowerCase() === 'yes');
+  const verbose =
+    options.verbose || (process.env.VERBOSE && process.env.VERBOSE.toLowerCase() === 'yes');
+  const paths =
+    options.paths ||
+    (process.env.COMMIT_PATHS
+      ? process.env.COMMIT_PATHS.split(',')
+          .map((entry) => entry.trim())
+          .filter(Boolean)
+      : []);
 
-  // Stage and commit all changes.
-  commitAll(commitMsg);
+  commitChanges({ message: commitMsg, paths, dryRun, verbose });
 
-  if (autoApprove) {
-    pushAndCreatePR(branch, baseBranch);
-    console.log('✅ PR created automatically (AUTO_PR=yes)');
-    return;
+  if (!autoApprove) {
+    if (!process.stdin.isTTY) {
+      throw new Error('Interactive prompt unavailable; set AUTO_PR=yes to continue.');
+    }
+
+    const approved = await askYesNo(`Push branch ${branch} and open a PR to ${baseBranch}?`);
+    if (!approved) {
+      log('User declined to open a PR.');
+      return;
+    }
   }
 
-  if (!question) {
-    console.error('Interactive mode unavailable – set AUTO_PR=yes to skip prompting.');
-    process.exit(1);
-  }
+  if (!dryRun) ensureGhAuthenticated();
+  pushBranch(branch, { dryRun, verbose });
 
-  const answers = await question({
-    questions: [{
-      name: 'review',
-      type: 'list',
-      message: `Push branch ${branch} and open a PR to ${baseBranch}?`,
-      choices: ['Yes', 'No']
-    }]
-  });
+  const title = options.prTitle || process.env.PR_TITLE || getCommitField('%s') || branch;
+  const body =
+    options.prBody ||
+    process.env.PR_BODY ||
+    getCommitField('%B') ||
+    `Automated changes for ${branch}`;
 
-  if (answers[0] === 'Yes') {
-    pushAndCreatePR(branch, baseBranch);
-    console.log('✅ PR created successfully');
-  } else {
-    console.log('⚠️ User declined to open a PR');
-  }
+  createPr({ branch, baseBranch, title, body, dryRun, verbose });
+  log('✅ PR created successfully');
 }
 
 module.exports = { run };
-
