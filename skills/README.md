@@ -18,6 +18,23 @@ Captures the **how** for a validated idea. Generates alternatives, stress-tests
 them, records the chosen approach, and appends the solution to the idea document
 (or writes a separate solution file).
 
+## implementation-planning
+
+Turns a documented solution into an execution-ready plan. It resolves planning
+unknowns with a Planner and Devil's Advocate council, identifies the required
+architectural changes and updates the root `ARCHITECTURE.md`, then writes a plan
+index and one Markdown file per task under `docs/plans/YYYY-MM-DD-<slug>/`.
+
+Every task file records goal and acceptance criteria, files/areas to change,
+architecture impact, dependencies and order, verification/tests, risks and
+rollback, estimate/size, and milestone mapping. When the artifacts are ready,
+the skill asks the user to review everything; only after approval does it ask
+whether to hand off to an `implementation` skill.
+
+Requires a documented solution artifact (an idea document with a `## Solution`
+section or a file under `docs/solutions/`). If it is missing, the skill stops
+and offers `solution-brainstorming`.
+
 ## review-and-pr
 
 Commits pending changes, pushes the current branch, and opens or reuses a GitHub
