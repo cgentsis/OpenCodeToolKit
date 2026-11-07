@@ -261,6 +261,12 @@ After the solution is documented, ask whether the user wants to create an
 implementation plan or continue with a planning skill. Do not implement the
 solution in this skill.
 
+If the user wants a plan, load the `implementation-planning` skill with the
+**skill tool** (`name: "implementation-planning"`) and pass the solution
+artifact path. Do not delegate this to a subagent. If the skill tool is
+unavailable, follow the `implementation-planning` instructions directly in the
+main session, using the solution artifact as input.
+
 ## Decision log
 
 Maintain the decision log throughout solution brainstorming, not only at the
