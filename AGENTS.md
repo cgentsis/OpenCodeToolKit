@@ -1,5 +1,26 @@
 # Agent Instructions
 
+## Worktree first (mandatory)
+
+- Before making **any** file change in this repository, create or enter an
+  isolated git worktree using the `create-worktree-on-change` skill.
+- Never edit, create, delete, or move files in the main checkout. This applies
+  to code, documentation, skills, configuration, and generated artifacts.
+- If you are already inside a linked worktree, continue there.
+- If you are in the main checkout, stop before the first edit and create a
+  worktree. Use a short task name, for example:
+
+  ```bash
+  node skills/create-worktree-on-change/ensure-worktree.js <task-name>
+  ```
+
+  The command prints the worktree path. Use that path as the working directory
+  for all subsequent commands.
+- If the worktree cannot be created, stop and ask the user. Do not fall back to
+  editing the main checkout.
+- Read-only commands and inspection are allowed in the main checkout. The rule
+  applies as soon as you are about to change something.
+
 ## Skills vs. subagents
 
 - Skills are loaded with the **skill tool**, using the skill's `name` (for

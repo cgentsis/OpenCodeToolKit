@@ -95,6 +95,9 @@ include a constructive path forward.
 - Make assumptions explicit and label them as assumptions.
 - State the agents' internal critique to the user as concise feedback, not as
   a wall of text.
+- **Worktree first.** Before writing the solution artifact or any other file,
+  use the `create-worktree-on-change` skill. Never write files in the main
+  checkout.
 - Do not proceed past the hard gate without explicit user confirmation.
 - The skill is not complete until the solution exists on disk. Writing and
   verifying that artifact is part of this skill, not a follow-up request.
