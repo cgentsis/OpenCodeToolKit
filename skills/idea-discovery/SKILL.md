@@ -92,6 +92,8 @@ include a constructive path forward.
 - Make assumptions explicit and label them as assumptions.
 - State the agents' internal critique to the user as concise feedback, not as
   a wall of text.
+- **Worktree first.** Before writing the idea document or any other file, use
+  the `create-worktree-on-change` skill. Never write files in the main checkout.
 - Do not proceed past the hard gate without explicit user confirmation.
 - **Confirmation means document.** Confirming the summary authorizes writing the
   idea document; it does not authorize skipping it or jumping to solution
