@@ -1,7 +1,0 @@
-{
-  "name": "create-worktree-on-change",
-  "description": "Automatically creates a git worktree and switches OpenCode to work there before any file change.",
-  "events": {
-    "on_change": "create-worktree.js"
-  }
-}

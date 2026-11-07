@@ -1,7 +1,22 @@
 # Skills
 
-Shared OpenCode skills. Each skill has a `manifest.jsonc` that declares its
-event hook and entrypoint.
+Shared OpenCode skills. opencode discovers each skill through its `SKILL.md`
+file, and `opencode.jsonc` registers this directory via `skills.paths`.
+
+The `manifest.jsonc` files describe the skill entrypoints for external
+orchestration. opencode itself uses `SKILL.md` for discovery and instructions.
+
+## idea-discovery
+
+Captures the **what** and **why** of a new idea through a council of Brainstormer
+and Devil's Advocate. Produces a validated idea document under `docs/ideas/` and
+then offers to continue with `solution-brainstorming`.
+
+## solution-brainstorming
+
+Captures the **how** for a validated idea. Generates alternatives, stress-tests
+them, records the chosen approach, and appends the solution to the idea document
+(or writes a separate solution file).
 
 ## review-and-pr
 
