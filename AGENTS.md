@@ -32,18 +32,26 @@
 - Skills that ask the user questions must run in the **main session**.
   Subagents cannot ask the user questions.
 
-## Idea discovery and solution brainstorming
+## Skill pipeline
 
 - Before any non-trivial creative, planning, or implementation work, load the
   `idea-discovery` skill when the idea or problem is not yet validated.
 - Trigger on idea statements such as "I want to…", "I'm thinking about…",
   "Let's build/create/start…", and "help me design…", even when the user does
   not say "brainstorm".
-- `idea-discovery` captures the **what** and **why**, writes an idea document,
-  and then offers to continue with `solution-brainstorming` for the **how**.
-- Use `solution-brainstorming` when the user wants to choose an approach, or
+- Follow the pipeline in order: `idea-discovery` (what/why) →
+  `solution-brainstorming` (how) → `implementation-planning` (plan and
+  architecture) → `implementation` (code) → `review-and-pr` (commit, push, PR).
+- Load `solution-brainstorming` when the user wants to choose an approach, or
   when an idea document already exists and the user asks how to do it.
+- Load `implementation-planning` for an execution plan from a documented
+  solution; it updates root `ARCHITECTURE.md` and writes `docs/plans/`.
+- Load `implementation` for an approved plan; it works task by task and verifies
+  each task before marking it complete.
+- Load `review-and-pr` only when the user explicitly authorizes committing,
+  pushing, or opening a PR.
 - Do not skip `idea-discovery` unless the idea is already documented and
-  confirmed.
-- Do not replace either skill with a report-generating subagent. If a skill
+  confirmed. Do not start a later stage without its input artifact on disk.
+- Do not replace a council skill with a report-generating subagent. If a skill
   cannot be loaded, ask its stage questions directly in the main session.
+- See `skills/README.md` for the full pipeline and each skill's inputs/outputs.

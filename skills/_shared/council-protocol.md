@@ -1,9 +1,9 @@
 # Council protocol (shared)
 
 This file defines the interaction protocol shared by the council-style skills:
-`idea-discovery`, `solution-brainstorming`, `implementation-planning`, and
-`implementation`. Read it once at the start of any of those skills and follow it
-for the whole session.
+`idea-discovery`, `solution-brainstorming`, and `implementation-planning`. Read
+it once at the start of any of those skills and follow it for the whole session.
+`implementation` is not a council skill and does not use this protocol.
 
 Each skill's own `SKILL.md` defines its roles, scope boundary, stages, and
 output artifact. This file defines **how** the conversation runs. Keep the two
