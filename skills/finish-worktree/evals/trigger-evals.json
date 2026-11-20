@@ -1,0 +1,16 @@
+[
+  { "query": "PR #4 merged. Clean up the worktree for fix-review-findings.", "should_trigger": true },
+  { "query": "We're done with this branch after the merge — finish the worktree.", "should_trigger": true },
+  { "query": "Move me back to the main checkout and remove the local worktree.", "should_trigger": true },
+  { "query": "After the merge, delete the local branch and worktree but leave the remote branch alone.", "should_trigger": true },
+  { "query": "Finish up the final stage of the worktree lifecycle after the PR merged.", "should_trigger": true },
+  { "query": "Remove the linked worktree for feature-x now that it is merged.", "should_trigger": true },
+  { "query": "Clean up locally after the merge — do not touch the remote branch.", "should_trigger": true },
+  { "query": "Please delete the remote branch for the merged PR.", "should_trigger": false },
+  { "query": "Create a new worktree for the reporting-skill branch.", "should_trigger": false },
+  { "query": "Commit, push, and open a PR for these changes.", "should_trigger": false },
+  { "query": "Merge PR #4 for me.", "should_trigger": false },
+  { "query": "What is a git worktree?", "should_trigger": false },
+  { "query": "Review these changes and tell me if they are correct.", "should_trigger": false },
+  { "query": "Fix the typo in README.md.", "should_trigger": false }
+]

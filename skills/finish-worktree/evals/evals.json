@@ -1,0 +1,17 @@
+{
+  "skill_name": "finish-worktree",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "PR #4 was just merged. Clean up the worktree for fix-review-findings and move me back to main.",
+      "expected_output": "Determines the current branch, moves the session to the main checkout before running the script, previews with DRY_RUN=yes, verifies the PR is MERGED and the worktree is clean, runs node finish-worktree.js fix-review-findings, reports the main checkout path and that the worktree and branch were removed. Never mentions deleting a remote branch except to say it is not done.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "We're done with the feature-x branch after the merge. Finish the worktree.",
+      "expected_output": "Captures feature-x as the target, moves the session to the main checkout first, runs a dry run, then runs node finish-worktree.js feature-x. If preflight refuses for a dirty worktree or unmerged PR, reports the reason and leaves the worktree intact.",
+      "files": []
+    }
+  ]
+}

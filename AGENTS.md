@@ -41,7 +41,8 @@
   not say "brainstorm".
 - Follow the pipeline in order: `idea-discovery` (what/why) →
   `solution-brainstorming` (how) → `implementation-planning` (plan and
-  architecture) → `implementation` (code) → `review-and-pr` (commit, push, PR).
+  architecture) → `implementation` (code) → `review-and-pr` (commit, push, PR)
+  → `finish-worktree` (clean up locally after the PR merges).
 - Load `solution-brainstorming` when the user wants to choose an approach, or
   when an idea document already exists and the user asks how to do it.
 - Load `implementation-planning` for an execution plan from a documented
@@ -50,6 +51,9 @@
   each task before marking it complete.
 - Load `review-and-pr` only when the user explicitly authorizes committing,
   pushing, or opening a PR.
+- Load `finish-worktree` after a PR is merged to verify the merge, move the
+  session to the main checkout, and remove the local worktree and branch. It
+  never deletes the remote branch and does not commit, push, or merge.
 - Do not skip `idea-discovery` unless the idea is already documented and
   confirmed. Do not start a later stage without its input artifact on disk.
 - Do not replace a council skill with a report-generating subagent. If a skill
