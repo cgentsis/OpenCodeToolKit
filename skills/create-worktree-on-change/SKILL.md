@@ -53,11 +53,17 @@ about to change something.
    The command prints JSON with the branch and worktree path.
 
 3. Use that path as the working directory for every subsequent command.
-4. To create the worktree and immediately run the review-and-PR workflow, use:
+4. To create the worktree and, when it already has pending changes, run the
+   review-and-PR workflow:
 
    ```bash
    node run-workflow.js <name>
    ```
+
+   A fresh worktree has no changes, so the PR workflow is skipped for it. If the
+   worktree does have changes, the workflow prompts for confirmation unless
+   `AUTO_PR=yes` is set; set it only when the user has explicitly authorized
+   pushing or opening a PR.
 
 ## Options
 

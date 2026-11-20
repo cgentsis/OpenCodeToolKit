@@ -1,0 +1,23 @@
+{
+  "skill_name": "solution-brainstorming",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "The validated idea is at docs/ideas/2026-02-11-reporting-tool.md. Now help me work out how to actually do it — I want real alternatives, not just one answer.",
+      "expected_output": "Reads the idea document, generates 3–5 genuinely different approaches, critiques each with the Devil's Advocate, lets the user select which to deepen, and after a hard gate appends a ## Solution section with chosen approach, alternatives, trade-offs, risks, decision log, and council sign-off.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "We've agreed the team needs a shared component library (see docs/ideas/2026-01-30-component-library.md). What are the ways we could get there and which makes sense for us?",
+      "expected_output": "Frames the solution space from the idea document, proposes and deepens alternatives with the user choosing which to explore, then documents the chosen approach in the idea document or a file under docs/solutions/ and verifies it on disk.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Idea doc: docs/ideas/2026-03-02-offline-notes.md. The constraints say no new backend service and offline-first. Figure out the how.",
+      "expected_output": "Honors the stated constraints without re-asking them, explores approaches that satisfy offline-first with no backend, records trade-offs and open questions, and stops rather than writing task-level plans or code.",
+      "files": []
+    }
+  ]
+}

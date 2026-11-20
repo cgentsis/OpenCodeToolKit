@@ -1,0 +1,23 @@
+{
+  "skill_name": "implementation-planning",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "The chosen approach is documented at docs/solutions/2026-02-11-reporting-tool-solution.md. Turn it into an execution plan.",
+      "expected_output": "Reads the solution artifact, resolves planning unknowns through the question loop, updates root ARCHITECTURE.md, then writes docs/plans/YYYY-MM-DD-<slug>/index.md plus one NN-<slug>.md per task with all mandatory fields. Verifies every file on disk, then asks for review approval and a separate handoff decision.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "docs/ideas/2026-01-30-component-library.md has a ## Solution section. I need milestones, task sequencing, and verification steps before anyone codes.",
+      "expected_output": "Uses the ## Solution section as the required artifact without redoing discovery. Produces a plan index and task files with S/M/L sizing, dependencies, acceptance criteria, verification, risks/rollback, and milestone mapping; includes the decision log in the index.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Plan out the work for docs/solutions/2026-03-02-offline-notes-solution.md. There's basically no architecture change here.",
+      "expected_output": "Applies the no-impact architecture rule: asks the user whether to create a baseline, record an explicit no-architectural-changes entry, or leave ARCHITECTURE.md untouched. Does not decide silently, and still produces verified plan artifacts.",
+      "files": []
+    }
+  ]
+}

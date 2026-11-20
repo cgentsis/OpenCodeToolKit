@@ -1,0 +1,23 @@
+{
+  "skill_name": "idea-discovery",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I've been thinking about a tool that reads our team's meeting notes and automatically surfaces action items. I'm not even sure this is a real problem though. Help me figure out what I actually want here.",
+      "expected_output": "Runs one-question-per-turn discovery about the what and why. Produces docs/ideas/YYYY-MM-DD-<slug>.md with goals, audience, constraints, non-goals, assumptions, decision log, open questions, and council sign-off. Does not propose solutions or write code.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I want to write a book about urban gardening. Can you help me think this through?",
+      "expected_output": "Frames the idea, goals, audience, constraints, and non-goals through the council question loop. Hard gate confirms a summary, then writes a verified idea document in docs/ideas/ and returns its absolute path.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "My boss asked me to look into whether we should offer a hosted version of our open-source library. I need to work out what we're actually deciding before anyone starts planning.",
+      "expected_output": "Treats the hosted-service question as an unvalidated idea. Challenges assumptions with the Devil's Advocate, records each challenge in the decision log, and documents the validated what and why without choosing an implementation approach.",
+      "files": []
+    }
+  ]
+}

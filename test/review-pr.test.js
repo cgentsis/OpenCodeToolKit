@@ -93,4 +93,46 @@ describe('review-and-PR skill', () => {
       run({ autoApprove: true, branch: 'test-branch', baseBranch: 'main' })
     ).rejects.toThrow('push failed');
   });
+
+  test('dry run makes no gh calls and does not claim a PR was created', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      await run({ autoApprove: true, branch: 'test-branch', baseBranch: 'main', dryRun: true });
+
+      expect(calls.some((call) => call.cmd === 'gh')).toBe(false);
+      const messages = logSpy.mock.calls.map((args) => args.join(' '));
+      expect(messages.some((msg) => msg.includes('[dry-run]'))).toBe(true);
+      expect(messages.some((msg) => msg.includes('no changes were made'))).toBe(true);
+      expect(messages.some((msg) => msg.includes('PR created successfully'))).toBe(false);
+    } finally {
+      logSpy.mockRestore();
+    }
+  });
+
+  test('dry run does not require interactive approval', async () => {
+    await expect(
+      run({ branch: 'test-branch', baseBranch: 'main', dryRun: true })
+    ).resolves.toBeUndefined();
+
+    expect(calls.some((call) => call.cmd === 'gh')).toBe(false);
+  });
+
+  test('shows pending changes before staging', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      await run({ autoApprove: true, branch: 'test-branch', baseBranch: 'main' });
+
+      const messages = logSpy.mock.calls.map((args) => args.join(' '));
+      expect(messages.some((msg) => msg.includes('Pending changes to stage:'))).toBe(true);
+      expect(messages.some((msg) => msg.includes('M file.js'))).toBe(true);
+    } finally {
+      logSpy.mockRestore();
+    }
+  });
+
+  test('exports pending-change helpers', () => {
+    const mod = require('../skills/review-and-pr/review-pr');
+    expect(typeof mod.hasChanges).toBe('function');
+    expect(typeof mod.getPendingChanges).toBe('function');
+  });
 });

@@ -26,8 +26,9 @@
 - Skills are loaded with the **skill tool**, using the skill's `name` (for
   example, `skill` with `name: "idea-discovery"` or
   `name: "solution-brainstorming"`).
-- Never pass a skill name to the **task tool** as `subagent_type`. Skills are
-  not agents. Doing so fails with `Unknown agent type`.
+- Skills are not agent types. Never pass a skill name to the **subagent** tool
+  as its `agent`; it accepts `explore` or `general`. A skill name fails with
+  "Unknown agent type".
 - Skills that ask the user questions must run in the **main session**.
   Subagents cannot ask the user questions.
 
