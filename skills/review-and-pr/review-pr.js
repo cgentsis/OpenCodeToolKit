@@ -25,17 +25,25 @@ function branchExists(branch) {
   }
 }
 
-function hasChanges(paths = []) {
+function getPendingChanges(paths = []) {
   const args = ['status', '--porcelain'];
   if (paths.length) args.push('--', ...paths);
-  return execFileSync('git', args, { encoding: 'utf8' }).trim().length > 0;
+  return execFileSync('git', args, { encoding: 'utf8' }).trim();
+}
+
+function hasChanges(paths = []) {
+  return getPendingChanges(paths).length > 0;
 }
 
 function commitChanges({ message, paths = [], dryRun = false, verbose = false }) {
-  if (!hasChanges(paths)) {
+  const pending = getPendingChanges(paths);
+  if (!pending) {
     log('No changes to commit; skipping commit.');
     return false;
   }
+
+  log('Pending changes to stage:');
+  log(pending);
 
   const addArgs = paths.length ? ['add', '--', ...paths] : ['add', '.'];
   const commitArgs = ['commit', '-m', message];
@@ -99,12 +107,6 @@ function findOpenPr(branch) {
 }
 
 function createPr({ branch, baseBranch, title, body, dryRun = false, verbose = false }) {
-  const existing = findOpenPr(branch);
-  if (existing) {
-    log(`Open PR already exists: ${existing}`);
-    return existing;
-  }
-
   const args = [
     'pr',
     'create',
@@ -119,8 +121,15 @@ function createPr({ branch, baseBranch, title, body, dryRun = false, verbose = f
   ];
 
   if (dryRun) {
+    log('[dry-run] would check for an existing open PR');
     log(`[dry-run] gh ${args.join(' ')} (body via stdin)`);
     return null;
+  }
+
+  const existing = findOpenPr(branch);
+  if (existing) {
+    log(`Open PR already exists: ${existing}`);
+    return existing;
   }
 
   if (verbose) log(`gh ${args.join(' ')} (body via stdin)`);
@@ -166,7 +175,7 @@ async function run(options = {}) {
 
   commitChanges({ message: commitMsg, paths, dryRun, verbose });
 
-  if (!autoApprove) {
+  if (!autoApprove && !dryRun) {
     if (!process.stdin.isTTY) {
       throw new Error('Interactive prompt unavailable; set AUTO_PR=yes to continue.');
     }
@@ -188,8 +197,15 @@ async function run(options = {}) {
     getCommitField('%B') ||
     `Automated changes for ${branch}`;
 
-  createPr({ branch, baseBranch, title, body, dryRun, verbose });
-  log('✅ PR created successfully');
+  const prUrl = createPr({ branch, baseBranch, title, body, dryRun, verbose });
+
+  if (dryRun) {
+    log('[dry-run] Workflow complete; no changes were made.');
+  } else if (prUrl) {
+    log(`✅ PR ready: ${prUrl}`);
+  } else {
+    log('Workflow complete; no PR was created.');
+  }
 }
 
-module.exports = { run };
+module.exports = { run, hasChanges, getPendingChanges };

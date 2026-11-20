@@ -1,0 +1,18 @@
+[
+  { "query": "The idea is documented at docs/ideas/2026-02-11-reporting-tool.md. How should we actually build it? I'd like to compare a few options.", "should_trigger": true },
+  { "query": "We already validated the mentorship program idea. Now figure out the how — approaches, trade-offs, and what you'd pick.", "should_trigger": true },
+  { "query": "Given the constraints in docs/ideas/2026-01-30-component-library.md, what are the realistic ways to get a shared component library off the ground?", "should_trigger": true },
+  { "query": "I want to compare a hosted service versus a self-hosted install for our validated idea. See docs/ideas/2026-03-04-sync.md.", "should_trigger": true },
+  { "query": "Take the validated what and why and turn it into an approach with alternatives and a decision log. Idea doc is in docs/ideas.", "should_trigger": true },
+  { "query": "The what is settled; I need help choosing an architecture for it and understanding the trade-offs before we plan tasks.", "should_trigger": true },
+  { "query": "Continue from idea discovery into the solution phase — the doc is at docs/ideas/2026-03-02-offline-notes.md.", "should_trigger": true },
+  { "query": "Which of these approaches would you recommend for the validated idea in docs/ideas/2026-02-11-reporting-tool.md, and why?", "should_trigger": true },
+  { "query": "I've got this half-formed idea for a meeting-notes tool — help me work out what problem we're even solving.", "should_trigger": false },
+  { "query": "Here's the approved approach in docs/solutions/2026-02-11-reporting-tool-solution.md. Write the plan index and one file per task.", "should_trigger": false },
+  { "query": "Start implementing task 01 of docs/plans/2026-02-11-reporting/index.md.", "should_trigger": false },
+  { "query": "Implement a function that merges two sorted arrays in TypeScript.", "should_trigger": false },
+  { "query": "Commit and push this, then open a PR.", "should_trigger": false },
+  { "query": "Summarize docs/ideas/2026-02-11-reporting-tool.md for me in three bullets.", "should_trigger": false },
+  { "query": "What's the trade-off between SQL and NoSQL databases in general?", "should_trigger": false },
+  { "query": "Can you fix the failing test in test/review-pr.test.js?", "should_trigger": false }
+]

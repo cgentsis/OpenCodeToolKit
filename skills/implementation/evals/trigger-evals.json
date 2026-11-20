@@ -1,0 +1,16 @@
+[
+  { "query": "The plan at docs/plans/2026-02-11-reporting/index.md is approved — start implementing it.", "should_trigger": true },
+  { "query": "implementation-planning handed off. Here's the plan index; please carry it out.", "should_trigger": true },
+  { "query": "Work through task 01 and task 02 of docs/plans/2026-03-02-offline-notes/index.md in order.", "should_trigger": true },
+  { "query": "Build the thing described in docs/plans/2026-03-05-font-picker/01-scaffold.md, then run its verification.", "should_trigger": true },
+  { "query": "We approved the plan last week; go ahead and write the code for it.", "should_trigger": true },
+  { "query": "Continue from the plan: docs/plans/2026-02-11-reporting/index.md.", "should_trigger": true },
+  { "query": "Execute the remaining tasks in the plan and tell me what passed.", "should_trigger": true },
+  { "query": "The task says acceptance criteria are unverifiable — stop and report rather than guessing.", "should_trigger": true },
+  { "query": "Help me figure out if we should build an offline notes app at all.", "should_trigger": false },
+  { "query": "Compare a few architectures for the validated idea and recommend one.", "should_trigger": false },
+  { "query": "Write the plan index and one file per task for docs/solutions/2026-02-11-reporting-tool-solution.md.", "should_trigger": false },
+  { "query": "Commit, push, and open a PR for these changes.", "should_trigger": false },
+  { "query": "Explain what a worktree is.", "should_trigger": false },
+  { "query": "Fix the typo in README.md.", "should_trigger": false }
+]
