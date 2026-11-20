@@ -1,0 +1,16 @@
+[
+  { "query": "Validate all skill eval files.", "should_trigger": true },
+  { "query": "Check eval coverage after editing a skill description.", "should_trigger": true },
+  { "query": "Find skills that are missing eval suites.", "should_trigger": true },
+  { "query": "Run the offline eval validation for idea-discovery.", "should_trigger": true },
+  { "query": "Run the advisory live evals with --live.", "should_trigger": true },
+  { "query": "My eval JSON is malformed, check it.", "should_trigger": true },
+  { "query": "Validate the trigger queries for all skills.", "should_trigger": true },
+  { "query": "Write new eval prompts for the implementation skill.", "should_trigger": false },
+  { "query": "Judge whether the model output was correct.", "should_trigger": false },
+  { "query": "Add this eval runner to CI as a required gate.", "should_trigger": false },
+  { "query": "Run npm test for the JavaScript suites.", "should_trigger": false },
+  { "query": "Fix the typo in the README.", "should_trigger": false },
+  { "query": "What is a skill in OpenCode?", "should_trigger": false },
+  { "query": "Commit and push these changes.", "should_trigger": false }
+]
