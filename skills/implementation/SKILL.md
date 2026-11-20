@@ -96,3 +96,6 @@ status; scoped changes; explicit handoff.
 Before claiming a task complete or handing off, follow
 `verification-before-completion`: run the baseline and task-specific checks,
 read their output, and cite the observed results.
+
+If a failure appears during a task, route the diagnosis to
+`systematic-debugging` before proposing a fix; do not guess at a cause.

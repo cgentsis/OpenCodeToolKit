@@ -1,0 +1,15 @@
+[
+  { "query": "This test is failing, help me fix it.", "should_trigger": true },
+  { "query": "The build behaves unexpectedly in production.", "should_trigger": true },
+  { "query": "Intermittent failure that I can't reproduce yet.", "should_trigger": true },
+  { "query": "Find the root cause before patching this bug.", "should_trigger": true },
+  { "query": "I need a failing regression command before applying the fix.", "should_trigger": true },
+  { "query": "My previous fix didn't work, the bug is still there.", "should_trigger": true },
+  { "query": "Can we patch it first and add a test later?", "should_trigger": true },
+  { "query": "Write a new Jest test for the helper.", "should_trigger": false },
+  { "query": "Open a PR and push the branch.", "should_trigger": false },
+  { "query": "Run the baseline checks before we say this is done.", "should_trigger": false },
+  { "query": "Clean up the worktree after the PR merged.", "should_trigger": false },
+  { "query": "Create an implementation plan from the approved solution.", "should_trigger": false },
+  { "query": "What does this repository do?", "should_trigger": false }
+]

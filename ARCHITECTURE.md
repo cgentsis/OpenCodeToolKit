@@ -21,6 +21,8 @@ architecture document.
 - `skills/verification-before-completion/` — a `SKILL.md` with the evidence bar
   and failure rule, plus an optional `verify-completion.js` helper that runs the
   baseline checks in one step. The helper is an accelerator, not a required gate.
+- `skills/systematic-debugging/` — guidance-only `SKILL.md` and eval files. It
+  enforces a hard-stop regression checkpoint before any fix; no helper script.
 - Root-level `run-*.js` and `*-worktree.js` scripts — CLI entrypoints for
   script-backed skills. Skills invoke them from the repository root.
 - `test/` — Jest unit tests. Scripts must expose pure helpers where practical
@@ -63,6 +65,18 @@ hard gate, and verification rules. `implementation` is not a council skill.
   default), and never a CI gate.
 - Live checks spawn the `opencode` CLI with argument arrays and `shell: false`.
 - v1 emits human-readable logs only; a machine-readable report is deferred.
+
+## Debugging conventions
+
+- Bugs, test failures, and unexpected behavior follow
+  `systematic-debugging`: reproduce → isolate → root cause → failing repeatable
+  command → fix → verify.
+- The failing command is a hard stop before any fix; it need not be a Jest test,
+  but it must be explicit and repeatable.
+- Evidence is cited inline; no new report file or format is introduced.
+- If reproduction fails after reasonable effort, stop and report the attempts
+  and evidence instead of proposing a speculative fix.
+- Completion claims still depend on `verification-before-completion`.
 
 ## Verification conventions
 

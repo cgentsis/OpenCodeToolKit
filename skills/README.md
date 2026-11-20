@@ -168,6 +168,16 @@ The helper is optional: it runs the baseline checks in one step, prints their
 output, and exits non-zero on any failure. Manual evidence is equally valid.
 The helper is not a CI gate and does not require any new dependency.
 
+### systematic-debugging
+
+Requires a structured investigation before any fix for a bug, failing test, or
+unexpected behavior, including intermittent issues. The hard-stop sequence is
+reproduce → isolate → root cause → failing repeatable command → fix → verify,
+then hand off to `verification-before-completion`. The failing command need not
+be a Jest test; any explicit, repeatable command qualifies. Evidence is cited
+inline, and unreproducible failures are reported rather than patched
+speculatively. This skill adds no helper script or new tooling.
+
 ## Shared council protocol
 
 `_shared/council-protocol.md` defines the question loop, question-tool usage,
