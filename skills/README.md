@@ -6,15 +6,16 @@ file, and `opencode.jsonc` registers this directory via `skills.paths`.
 ## Pipeline
 
 ```
-idea-discovery → solution-brainstorming → implementation-planning → implementation → review-and-pr
-   what / why        how / approach          plan + architecture       code         commit + PR
-       │                    │                       │                   │               │
-   docs/ideas/*      ## Solution section     docs/plans/*/*       task ## Status      PR URL
+idea-discovery → solution-brainstorming → implementation-planning → implementation → review-and-pr → finish-worktree
+   what / why        how / approach          plan + architecture       code         commit + PR      local cleanup
+       │                    │                       │                   │               │               │
+   docs/ideas/*      ## Solution section     docs/plans/*/*       task ## Status      PR URL      worktree removed
 ```
 
 Each stage requires the previous stage's artifact on disk and hands off only
 after an explicit decision. `create-worktree-on-change` is a mandatory
-pre-change step used by every skill that writes files.
+pre-change step used by every skill that writes files. `finish-worktree` runs
+after the PR is merged and is the only stage that removes a worktree.
 
 ## Available skills
 
@@ -100,6 +101,30 @@ Worktrees are created under `worktrees/<branch>`, which is ignored by git.
 `node create-and-review.js <name>` creates a worktree and runs `review-and-pr`
 only when that worktree already has pending changes; a fresh worktree skips the
 PR workflow.
+
+### finish-worktree
+
+Cleans up the local worktree and fully merged branch after a PR is merged. It
+moves the session to the main checkout first, verifies the merge and a clean
+worktree, fast-forwards `main`, then removes the worktree and deletes the local
+branch with `git branch -d`. It never deletes a remote branch and never commits,
+pushes, or merges.
+
+```bash
+DRY_RUN=yes node finish-worktree.js <branch>
+node finish-worktree.js <branch>
+```
+
+| Option | Environment variable | Default | Description |
+| --- | --- | --- | --- |
+| `branch` | `FINISH_BRANCH` | positional arg | Branch whose worktree should be finished. |
+| `baseBranch` | `BASE_BRANCH` | `main` | Expected main-checkout branch and PR base. |
+| `dryRun` | `DRY_RUN=yes` | `false` | Log commands without changing anything. |
+| `verbose` | `VERBOSE=yes` | `false` | Print each git command before running it. |
+
+Requires an authenticated `gh` for merge verification. A dry run still performs
+read-only preflight checks. The manual fallback is in
+`runbooks/finish-worktree.md`.
 
 ## Shared council protocol
 
