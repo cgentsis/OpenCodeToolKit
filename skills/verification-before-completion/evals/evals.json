@@ -1,0 +1,23 @@
+{
+  "skill_name": "verification-before-completion",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I fixed the failing test. We can call it done and hand off to review-and-pr.",
+      "expected_output": "Refuses the unqualified completion claim until the baseline checks are run and their output read. Runs npm test, node --check on changed JS files, and git diff --check (or the optional helper), cites observed results, and only then allows the handoff.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I only changed the README, do I really need to run the tests before saying it's finished?",
+      "expected_output": "States that documentation-only changes get no exemption from the baseline checks, runs them, reads the output, and withholds the completion claim if any check fails or cannot run.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Just list the commands you would run to verify this change; no need to actually run them.",
+      "expected_output": "Does not present unrun commands as evidence. Explains that a completion claim requires observed output, and either runs the checks or explicitly withholds the claim.",
+      "files": []
+    }
+  ]
+}

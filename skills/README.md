@@ -152,6 +152,22 @@ node skills/skill-evals/run-evals.js --live
 The runner is modular: `discover.js`, `validate.js`, `live.js`, and `report.js`
 back the thin `run-evals.js` CLI. See `ARCHITECTURE.md` for the conventions.
 
+### verification-before-completion
+
+Requires observed evidence before any completion claim or handoff, including
+ad-hoc fixes. Runs the baseline checks (`npm test`, `node --check`,
+`git diff --check`) plus task-specific ones, reads their output, and withholds
+the claim if any check fails or cannot run. There is no exemption for
+documentation-only changes.
+
+```bash
+node skills/verification-before-completion/verify-completion.js
+```
+
+The helper is optional: it runs the baseline checks in one step, prints their
+output, and exits non-zero on any failure. Manual evidence is equally valid.
+The helper is not a CI gate and does not require any new dependency.
+
 ## Shared council protocol
 
 `_shared/council-protocol.md` defines the question loop, question-tool usage,

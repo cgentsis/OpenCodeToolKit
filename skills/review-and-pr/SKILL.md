@@ -70,3 +70,9 @@ DRY_RUN=yes node run-review-pr.js
 
 A dry run does not call `gh` or change anything; it only logs the commands it
 would execute.
+
+## Verification
+
+Before reporting the PR as ready, follow `verification-before-completion`: run
+the baseline and task-specific checks, read their output, and do not claim
+success while a check is failing or unverified.
