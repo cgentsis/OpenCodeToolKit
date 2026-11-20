@@ -71,3 +71,7 @@ does not configure CI, does not judge model output, and does not replace the
 per-task verification defined in an implementation plan. Use `implementation`
 for plan tasks, `skill-evals` for eval-file validation, and `review-and-pr` only
 after evidence has been gathered.
+
+When a fix follows a failure that still needs diagnosis, use
+`systematic-debugging` first; this skill supplies the completion evidence after
+that fix, not the investigation itself.

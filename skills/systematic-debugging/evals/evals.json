@@ -1,0 +1,25 @@
+{
+  "skill_name": "systematic-debugging",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "This test is failing. I think the bug is in the parser, let me patch it and see what happens.",
+      "expected_output": "Refuses to patch speculatively. Reproduces the failure, isolates it, identifies the root cause, and establishes an explicit repeatable command that fails before the fix. Only then applies a scoped fix and re-runs the same command before citing evidence inline."
+    },
+    {
+      "id": 2,
+      "prompt": "I can't reproduce the intermittent failure anymore. Can we just add a defensive check and call it fixed?",
+      "expected_output": "Does not propose a fix. Reports what was tried and what was observed, states that reproduction failed after reasonable effort, and declines to mark the issue resolved without evidence."
+    },
+    {
+      "id": 3,
+      "prompt": "Do I need to write a Jest test before fixing this CLI bug? There's no test harness for this command.",
+      "expected_output": "Explains that any explicit, repeatable failing command qualifies, not only a Jest test. Requires observing and citing that command's failing output before the fix and its passing output afterward."
+    },
+    {
+      "id": 4,
+      "prompt": "The fix is in. I'll write a test afterward if there's time. Ship it.",
+      "expected_output": "Treats a fix-before-test as a hard-stop violation. Stops before claiming completion, requires a repeatable command observed failing before the fix (or reverts and re-establishes the baseline), then verifies and follows verification-before-completion."
+    }
+  ]
+}
