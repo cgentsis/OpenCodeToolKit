@@ -1,0 +1,16 @@
+[
+  { "query": "Can we call this done now?", "should_trigger": true },
+  { "query": "I fixed the bug, mark it complete.", "should_trigger": true },
+  { "query": "Before handing off to review-and-pr, check everything.", "should_trigger": true },
+  { "query": "Verify the change and cite the test output.", "should_trigger": true },
+  { "query": "The npm test failed but I think it is fine, can we ship?", "should_trigger": true },
+  { "query": "Run the checks before we say this is passing.", "should_trigger": true },
+  { "query": "Should I run the baseline checks for a docs-only change?", "should_trigger": true },
+  { "query": "Run the optional completion helper.", "should_trigger": true },
+  { "query": "Write a new Jest test for the helper.", "should_trigger": false },
+  { "query": "Open a PR and push the branch.", "should_trigger": false },
+  { "query": "Debug why the test is failing.", "should_trigger": false },
+  { "query": "Add a machine-readable report to the eval runner.", "should_trigger": false },
+  { "query": "Clean up the worktree after the PR merged.", "should_trigger": false },
+  { "query": "What does this repository do?", "should_trigger": false }
+]

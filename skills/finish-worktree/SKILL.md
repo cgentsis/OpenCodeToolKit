@@ -78,3 +78,9 @@ description: >-
 - The main checkout must be on the base branch (`main` by default).
 - `git` must be available on `PATH`.
 - A manual fallback checklist is in `runbooks/finish-worktree.md`.
+
+## Verification
+
+Before reporting cleanup as complete, follow
+`verification-before-completion`: confirm the worktree and local branch are
+gone and the remote branch is still present, then cite the observed output.

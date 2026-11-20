@@ -18,6 +18,9 @@ architecture document.
   (`discover.js`, `validate.js`, `live.js`, `report.js`) plus a thin
   `run-evals.js` CLI and a `SKILL.md`. The CLI discovers skills with eval files
   and validates them offline; `--live` is an advisory CLI-subprocess mode.
+- `skills/verification-before-completion/` — a `SKILL.md` with the evidence bar
+  and failure rule, plus an optional `verify-completion.js` helper that runs the
+  baseline checks in one step. The helper is an accelerator, not a required gate.
 - Root-level `run-*.js` and `*-worktree.js` scripts — CLI entrypoints for
   script-backed skills. Skills invoke them from the repository root.
 - `test/` — Jest unit tests. Scripts must expose pure helpers where practical
@@ -65,6 +68,14 @@ hard gate, and verification rules. `implementation` is not a council skill.
 
 - `npm test` runs all Jest suites with `--runInBand`.
 - Scripts are also checked with `node --check` and `git diff --check`.
+- Completion claims must cite observed command output, not just list commands.
+  A failed or unavailable check blocks the claim until resolved or explicitly
+  reported as unverified.
+- `verify-completion.js` is an optional helper: it runs `npm test`, `node --check`
+  on all tracked `.js` files, and `git diff --check`, prints their output, and
+  exits non-zero on any failure. It uses only Node built-ins and is never a CI
+  gate.
+- Documentation-only changes get no exemption from the baseline checks.
 - A dry run must be side-effect free and must not call `gh`.
 - The eval runner's offline mode must not call `opencode` or any LLM.
 

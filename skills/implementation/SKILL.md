@@ -90,3 +90,9 @@ the remaining tasks. Do not continue past a blocker without the user's decision.
 
 The plan is the contract; one task at a time; verify before done; truthful
 status; scoped changes; explicit handoff.
+
+## Verification
+
+Before claiming a task complete or handing off, follow
+`verification-before-completion`: run the baseline and task-specific checks,
+read their output, and cite the observed results.
