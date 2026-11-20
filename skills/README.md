@@ -126,6 +126,32 @@ Requires an authenticated `gh` for merge verification. A dry run still performs
 read-only preflight checks. The manual fallback is in
 `runbooks/finish-worktree.md`.
 
+### skill-evals
+
+Validates the repository's eval files offline by default and offers an advisory
+opt-in `--live` check using the `opencode` CLI. Live output is informational
+only and never a pass/fail gate.
+
+```bash
+node skills/skill-evals/run-evals.js --offline
+node skills/skill-evals/run-evals.js idea-discovery
+node skills/skill-evals/run-evals.js --live
+```
+
+| Flag | Purpose |
+| --- | --- |
+| `--offline` | Validate eval files only (default). |
+| `--live` | Advisory CLI checks; never a pass/fail gate. |
+| `--help` | Print usage. |
+| `skill` | Optional positional skill directory name to validate only. |
+
+| Environment variable | Default | Purpose |
+| --- | --- | --- |
+| `EVAL_TIMEOUT` | `30000` | Per-eval timeout in ms for `--live`. |
+
+The runner is modular: `discover.js`, `validate.js`, `live.js`, and `report.js`
+back the thin `run-evals.js` CLI. See `ARCHITECTURE.md` for the conventions.
+
 ## Shared council protocol
 
 `_shared/council-protocol.md` defines the question loop, question-tool usage,

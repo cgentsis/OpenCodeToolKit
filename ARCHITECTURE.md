@@ -14,6 +14,10 @@ architecture document.
   without `SKILL.md` are not registered as skills.
 - `skills/<name>/evals/` — `evals.json` (task prompts) and `trigger-evals.json`
   (description-triggering queries) for each prompt-driven skill.
+- `skills/skill-evals/` — the eval runner: modular CommonJS files
+  (`discover.js`, `validate.js`, `live.js`, `report.js`) plus a thin
+  `run-evals.js` CLI and a `SKILL.md`. The CLI discovers skills with eval files
+  and validates them offline; `--live` is an advisory CLI-subprocess mode.
 - Root-level `run-*.js` and `*-worktree.js` scripts — CLI entrypoints for
   script-backed skills. Skills invoke them from the repository root.
 - `test/` — Jest unit tests. Scripts must expose pure helpers where practical
@@ -29,9 +33,10 @@ architecture document.
 ## Skill pipeline
 
 `idea-discovery` → `solution-brainstorming` → `implementation-planning` →
-`implementation` → `review-and-pr`, with `create-worktree-on-change` as the
-mandatory pre-change gate. Each stage requires the previous stage's artifact on
-disk and hands off only after an explicit decision.
+`implementation` → `review-and-pr` → `finish-worktree`, with
+`create-worktree-on-change` as the mandatory pre-change gate. Each stage
+requires the previous stage's artifact on disk and hands off only after an
+explicit decision.
 
 Council skills share `skills/_shared/council-protocol.md` for the question loop,
 hard gate, and verification rules. `implementation` is not a council skill.
@@ -48,14 +53,23 @@ hard gate, and verification rules. `implementation` is not a council skill.
 - `manifest.jsonc` files are illustrative metadata only. Nothing in this
   repository dispatches them.
 
+## Eval runner conventions
+
+- Offline validation is the default and is CI-safe: no network or LLM calls.
+- `--live` is strictly opt-in, advisory, time-bounded (`EVAL_TIMEOUT`, 30s
+  default), and never a CI gate.
+- Live checks spawn the `opencode` CLI with argument arrays and `shell: false`.
+- v1 emits human-readable logs only; a machine-readable report is deferred.
+
 ## Verification conventions
 
 - `npm test` runs all Jest suites with `--runInBand`.
 - Scripts are also checked with `node --check` and `git diff --check`.
 - A dry run must be side-effect free and must not call `gh`.
+- The eval runner's offline mode must not call `opencode` or any LLM.
 
 ## Non-goals
 
-- No automated eval runner yet; eval files are data for an external harness.
+- No machine-readable JSON report in v1 (deferred).
 - No release or changelog automation.
 - No API layer or runtime service; this repository is skills, scripts, and docs.

@@ -1,0 +1,17 @@
+{
+  "skill_name": "skill-evals",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I just changed the description on the idea-discovery skill. Check its eval coverage.",
+      "expected_output": "Runs node skills/skill-evals/run-evals.js idea-discovery from the repository root, reports the validation summary, and cites any exact file/field errors. Does not modify eval files, run Jest, or start live checks.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Validate all skill eval files and tell me which skills are missing suites.",
+      "expected_output": "Runs the offline runner with no filter, lists discovered suites and warnings for skills with missing or incomplete eval files, exits non-zero only on structural errors, and makes no network or LLM calls.",
+      "files": []
+    }
+  ]
+}
