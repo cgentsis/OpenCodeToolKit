@@ -97,9 +97,9 @@ node skills/create-worktree-on-change/ensure-worktree.js <task-name>
 | `baseRef` | `BASE_REF` | `HEAD` | Base ref for new branches. |
 
 Worktrees are created under `worktrees/<branch>`, which is ignored by git.
-`node run-workflow.js <name>` creates a worktree and runs `review-and-pr` only
-when that worktree already has pending changes; a fresh worktree skips the PR
-workflow.
+`node create-and-review.js <name>` creates a worktree and runs `review-and-pr`
+only when that worktree already has pending changes; a fresh worktree skips the
+PR workflow.
 
 ## Shared council protocol
 

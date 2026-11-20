@@ -67,7 +67,7 @@ Non-goals:
 - Input may be an idea document containing a `## Solution` section, or a file
   under `docs/solutions/`.
 - Task files use the `NN-<slug>.md` naming convention.
-- `implementation` is the future handoff skill name; it may not exist yet.
+- `implementation` is the handoff skill; it consumes the plan index and task files.
 - Architecture updates are written directly to the root `ARCHITECTURE.md`.
 - `skills/README.md` and the `solution-brainstorming` handoff should reference
   the new skill.
@@ -106,17 +106,18 @@ Non-goals:
    task, with S/M/L sizing. Alternative: per-file or per-commit tasks.
    Rationale: verifiability is the strongest planning invariant.
 
-8. **Handoff behavior.** Decision: load an `implementation` skill if present;
-   otherwise report task paths and stop. Rationale: no hard dependency on a
-   skill that does not exist yet.
+8. **Handoff behavior.** Decision: load the `implementation` skill (now present)
+   with the plan index and task files; if it were missing, report task paths and
+   stop. Rationale: a named handoff keeps the pipeline deterministic without
+   coupling planning to implementation internals.
 
 9. **Review vs. handoff gates.** Decision: keep them separate; review approval
    does not authorize implementation. Rationale: prevents accidental execution.
 
 ## Open questions / next steps
 
-- None blocking. After the skill exists, a future `implementation` skill can
-  consume the plan directly.
+- None blocking. The `implementation` skill now exists and consumes the plan
+  directly.
 
 ## Council sign-off
 

@@ -57,7 +57,7 @@ about to change something.
    review-and-PR workflow:
 
    ```bash
-   node run-workflow.js <name>
+   node create-and-review.js <name>
    ```
 
    A fresh worktree has no changes, so the PR workflow is skipped for it. If the
