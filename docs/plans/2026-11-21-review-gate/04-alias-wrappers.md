@@ -53,4 +53,4 @@ Aliases and docs
 
 ## Status
 
-pending
+complete — `a813fd7` (three thin wrappers with `alias_of: review-gate` and fixed types, no `evals/` directories). Evidence: names match the core `aliases:` registry; final validator reports `Skills discovered: 15`, `Eval suites: 12`, `Errors: 0` with declared aliases exempt.

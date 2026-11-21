@@ -67,4 +67,4 @@ Enforcement and verification
 
 ## Status
 
-pending
+complete — `9386a62` (runner, alias-validator, and enforcement Jest suites). Evidence: final `npm test` `Test Suites: 10 passed, 10 total` / `Tests: 79 passed, 79 total`, including the three new suites and the task-10 alias-registry suite.

@@ -52,4 +52,4 @@ Core runner
 
 ## Status
 
-pending
+complete — `2195eb5` (core `evals.json` and `trigger-evals.json`, no wrapper eval files). Evidence: both files parse and `review-gate` is discovered as an eval suite; final offline evals `Summary: 12 suites, 0 errors, 0 warnings`.

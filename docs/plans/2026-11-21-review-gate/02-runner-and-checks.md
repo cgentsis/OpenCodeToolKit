@@ -66,4 +66,4 @@ Core runner
 
 ## Status
 
-pending
+complete — commits `98e06fb..c8e063c` (read-only runner, three check configs, report helpers). Evidence: task-09 sample reports showed correct frontmatter and advisory appendix; final `npm test` 10 suites/79 tests passed and `node --check` passed on all tracked `.js` files.

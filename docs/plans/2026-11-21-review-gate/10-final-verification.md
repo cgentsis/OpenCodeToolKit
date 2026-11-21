@@ -53,4 +53,4 @@ Enforcement and verification
 
 ## Status
 
-pending
+complete — full verification passed after the alias-warning fix. Evidence: `npm test` `Test Suites: 10 passed, 10 total` / `Tests: 79 passed, 79 total`; `NODE_CHECK_OK: 25 tracked .js files checked`; `GIT_DIFF_CHECK_EXIT=0`; validator `Skills discovered: 15`, `Eval suites: 12`, `Errors: 0`; `node skills/skill-evals/run-evals.js --offline` `Summary: 12 suites, 0 errors, 0 warnings`. Task 09 evidence cited, not rerun.

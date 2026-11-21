@@ -58,4 +58,4 @@ Aliases and docs
 
 ## Status
 
-pending
+complete — `2131d0d` (four skills registered in both marked blocks; pipeline docs updated). Evidence: validator changed from 8 missing-registry errors to `Errors: 0`; final `git diff --check` exit 0.

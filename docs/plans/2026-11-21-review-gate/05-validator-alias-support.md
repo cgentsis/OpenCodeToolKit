@@ -62,4 +62,4 @@ Aliases and docs
 
 ## Status
 
-pending
+complete — `532c314` (fail-closed alias helpers in `validate-skill-set.js`). Evidence: unit tests cover declared/undeclared/stale aliases; final validator `Errors: 0`; task-10 fix reuses `parseAliasRegistry`/`filterEvalWarnings` in the eval runner so offline evals now report `0 errors, 0 warnings`.

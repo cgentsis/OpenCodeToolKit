@@ -61,4 +61,4 @@ Enforcement and verification
 
 ## Status
 
-pending
+complete — verification-only, no commit; evidence in `.superpowers/sdd/index/task-9-report.md` (PASS). Sample code/design/specs reports had correct frontmatter and advisory appendix; approved report passed the dry-run gate; missing report exited 1 before commit/push; no `gh` invocation and no leftover artifacts. Not rerun in task 10, per instruction.

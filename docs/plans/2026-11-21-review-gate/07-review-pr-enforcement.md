@@ -62,4 +62,4 @@ Enforcement and verification
 
 ## Status
 
-pending
+complete — `153e209` (fail-closed `checkReviewReport` wired into `review-and-pr` before commit/push). Evidence: task-09 smoke run with an approved HEAD-fresh report passed the gate and logged dry-run commands; missing-report dry run exited 1 before any commit/push; no `gh` calls.

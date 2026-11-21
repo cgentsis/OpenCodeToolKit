@@ -55,4 +55,4 @@ Core runner
 
 ## Status
 
-pending
+complete — `f50cdfe` (core `SKILL.md` with workflow, report schema, and exact `aliases:` registry). Evidence: read-back confirmed all required fields and boundaries; final verification: `npm test` 10 suites/79 tests passed, validator `Errors: 0`, offline evals `0 errors, 0 warnings`.
