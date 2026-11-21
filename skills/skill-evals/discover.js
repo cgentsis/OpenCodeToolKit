@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-function discoverSkills(skillsDir) {
-  const entries = fs.readdirSync(skillsDir, { withFileTypes: true });
+function discoverSkills(skillsDir, fsLib = fs) {
+  const entries = fsLib.readdirSync(skillsDir, { withFileTypes: true });
   const skills = [];
   const warnings = [];
 
@@ -12,8 +12,8 @@ function discoverSkills(skillsDir) {
     const dir = path.join(skillsDir, entry.name);
     const evalPath = path.join(dir, 'evals', 'evals.json');
     const triggerPath = path.join(dir, 'evals', 'trigger-evals.json');
-    const hasEval = fs.existsSync(evalPath);
-    const hasTrigger = fs.existsSync(triggerPath);
+    const hasEval = fsLib.existsSync(evalPath);
+    const hasTrigger = fsLib.existsSync(triggerPath);
 
     if (hasEval && hasTrigger) {
       skills.push({ name: entry.name, dir, evalPath, triggerPath });

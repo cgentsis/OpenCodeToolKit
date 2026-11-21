@@ -4,8 +4,10 @@ const path = require('path');
 
 const { discoverSkills } = require('../skill-evals/discover.js');
 const { validateSkill } = require('../skill-evals/validate.js');
+const { parseFrontmatter } = require('../review-gate/run.js');
 
 const DEFAULT_ROOT = path.resolve(__dirname, '..', '..');
+const CORE_ALIAS_SKILL = 'review-gate';
 const START_MARKER = '<!-- skill-registry:start -->';
 const END_MARKER = '<!-- skill-registry:end -->';
 const REGISTRY_FILES = ['skills/README.md', 'AGENTS.md'];
@@ -58,6 +60,84 @@ function listSkillNames(skillsDir, fsLib = fs) {
   return names;
 }
 
+// The core skill's frontmatter `aliases:` list is the only source of truth for
+// eval exemptions. Anything unparsable means "no aliases", so wrappers are then
+// reported as undeclared rather than silently exempted.
+function parseAliasRegistry(markdown = '') {
+  const fields = parseFrontmatter(markdown);
+  if (!Array.isArray(fields.aliases)) return [];
+  return fields.aliases.filter(
+    (name) => typeof name === 'string' && /^[a-z0-9-]+$/.test(name)
+  );
+}
+
+// Read `alias_of` from every skill, including wrappers without eval files.
+function getAliasDeclarations(skillsDir, fsLib = fs, names = listSkillNames(skillsDir, fsLib)) {
+  const declarations = [];
+  for (const name of names) {
+    const read = readFile(path.join(skillsDir, name, 'SKILL.md'), fsLib);
+    if (read.error) {
+      declarations.push({ name, aliasOf: null, hasAliasOf: false, error: read.error });
+      continue;
+    }
+    const fields = parseFrontmatter(read.content);
+    const hasAliasOf = Object.prototype.hasOwnProperty.call(fields, 'alias_of');
+    declarations.push({
+      name,
+      aliasOf: hasAliasOf ? fields.alias_of : null,
+      hasAliasOf,
+      type: fields.type || null,
+    });
+  }
+  return declarations;
+}
+
+// Fail closed in both directions: an undeclared wrapper is an error, and every
+// declared alias must exist on disk as a wrapper pointing at the core skill.
+function checkAliasRegistry(declarations = [], aliasNames = [], coreName = CORE_ALIAS_SKILL) {
+  const errors = [];
+  const registered = Array.isArray(aliasNames) ? aliasNames : [];
+  const declaredNames = new Set(registered);
+  const present = new Map();
+
+  for (const declaration of Array.isArray(declarations) ? declarations : []) {
+    present.set(declaration.name, declaration);
+    if (declaration.error) {
+      errors.push(`alias registry: ${declaration.name}: ${declaration.error}`);
+      continue;
+    }
+    const isDeclared = declaredNames.has(declaration.name);
+    if (declaration.hasAliasOf) {
+      if (!isDeclared) {
+        errors.push(
+          `alias registry: undeclared wrapper ${declaration.name} (alias_of ${String(declaration.aliasOf)})`
+        );
+      } else if (declaration.aliasOf !== coreName) {
+        errors.push(
+          `alias registry: ${declaration.name} declares alias_of ${String(declaration.aliasOf)}, expected ${coreName}`
+        );
+      }
+    } else if (isDeclared) {
+      errors.push(`alias registry: declared alias ${declaration.name} is missing alias_of: ${coreName}`);
+    }
+  }
+
+  for (const alias of registered) {
+    if (!present.has(alias)) {
+      errors.push(`alias registry: stale alias declaration ${alias} (missing skill directory or SKILL.md)`);
+    }
+  }
+  return errors;
+}
+
+// Only declared aliases are exempt; all other eval warnings are untouched.
+function filterEvalWarnings(warnings = [], aliasNames = []) {
+  const aliases = Array.isArray(aliasNames) ? aliasNames : [];
+  return (Array.isArray(warnings) ? warnings : []).filter((warning) => (
+    !aliases.some((name) => typeof warning === 'string' && warning.startsWith(`${name}:`))
+  ));
+}
+
 function checkDiscovery(root, fsLib = fs) {
   const config = readFile(path.join(root, CONFIG_FILE), fsLib);
   if (config.error) return [config.error];
@@ -79,15 +159,23 @@ function checkEvalCoverage(discovery, validate = validateSkill) {
   return errors;
 }
 
-function collectEvalErrors(skillsDir) {
-  const discovery = discoverSkills(skillsDir);
-  return { errors: checkEvalCoverage(discovery), count: discovery.skills.length };
+function collectEvalErrors(skillsDir, fsLib = fs, aliasNames = []) {
+  const discovery = discoverSkills(skillsDir, fsLib);
+  const warnings = filterEvalWarnings(discovery.warnings, aliasNames);
+  return {
+    errors: checkEvalCoverage({ skills: discovery.skills, warnings }),
+    count: discovery.skills.length,
+  };
 }
 
 function validateSkillSet(root = DEFAULT_ROOT, fsLib = fs) {
   const skillsDir = path.join(root, 'skills');
   const names = listSkillNames(skillsDir, fsLib);
-  const evals = collectEvalErrors(skillsDir);
+  const coreRead = readFile(path.join(skillsDir, CORE_ALIAS_SKILL, 'SKILL.md'), fsLib);
+  const aliasNames = coreRead.error ? [] : parseAliasRegistry(coreRead.content);
+  const declarations = getAliasDeclarations(skillsDir, fsLib, names);
+  const aliasErrors = checkAliasRegistry(declarations, aliasNames);
+  const evals = collectEvalErrors(skillsDir, fsLib, aliasNames);
   const blocks = {};
   const registryErrors = [];
 
@@ -104,7 +192,12 @@ function validateSkillSet(root = DEFAULT_ROOT, fsLib = fs) {
   }
 
   registryErrors.push(...checkRegistryEntries(names, blocks));
-  const errors = [...evals.errors, ...registryErrors, ...checkDiscovery(root, fsLib)];
+  const errors = [
+    ...evals.errors,
+    ...aliasErrors,
+    ...registryErrors,
+    ...checkDiscovery(root, fsLib),
+  ];
   return { errors, skillCount: names.length, evalSuiteCount: evals.count };
 }
 
@@ -137,9 +230,14 @@ module.exports = {
   checkRegistryEntries,
   checkEvalCoverage,
   listSkillNames,
+  parseAliasRegistry,
+  getAliasDeclarations,
+  checkAliasRegistry,
+  filterEvalWarnings,
   checkDiscovery,
   formatReport,
   main,
   START_MARKER,
   END_MARKER,
+  CORE_ALIAS_SKILL,
 };
