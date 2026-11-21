@@ -46,10 +46,12 @@ architecture document.
 ## Skill pipeline
 
 `idea-discovery` → `solution-brainstorming` → `implementation-planning` →
-`implementation` → `review-and-pr` → `finish-worktree`, with
-`create-worktree-on-change` as the mandatory pre-change gate. Each stage
-requires the previous stage's artifact on disk and hands off only after an
-explicit decision.
+`implementation` → `review-gate` → `review-and-pr` → `finish-worktree`, with
+`create-worktree-on-change` as the mandatory pre-change gate. `review-and-pr`
+enforces the approved `docs/reviews/code.md` report produced by `review-gate`
+and stops before committing, pushing, or opening a PR when it is missing,
+stale, or not approved. Each stage requires the previous stage's artifact on
+disk and hands off only after an explicit decision.
 
 Council skills share `skills/_shared/council-protocol.md` for the question loop,
 hard gate, and verification rules. `implementation` is not a council skill.

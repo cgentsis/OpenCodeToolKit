@@ -161,7 +161,7 @@ async function run(options = {}) {
     cwd: options.cwd,
     reportPath: options.reportPath,
   }) || {};
-  if (!Array.isArray(reviewCheck.errors) || reviewCheck.errors.length > 0) {
+  if (reviewCheck.ok === false || !Array.isArray(reviewCheck.errors) || reviewCheck.errors.length > 0) {
     const details = Array.isArray(reviewCheck.errors) && reviewCheck.errors.length
       ? reviewCheck.errors.map((message) => `- ${message}`).join('\n')
       : `- ${REMEDIATION_MESSAGE}`;

@@ -154,6 +154,19 @@ describe('review-and-PR skill', () => {
     expect(calls.some((call) => call.cmd === 'gh')).toBe(false);
   });
 
+  test('blocks when the checker reports ok: false with no errors', async () => {
+    const checkReport = jest.fn(() => ({ ok: false, errors: [] }));
+
+    await expect(
+      run({ checkReport, branch: 'test-branch', baseBranch: 'main', dryRun: true })
+    ).rejects.toThrow('Code review report check failed');
+
+    expect(checkReport).toHaveBeenCalledTimes(1);
+    expect(calls.some((call) => call.cmd === 'git' && call.args[0] === 'add')).toBe(false);
+    expect(calls.some((call) => call.cmd === 'git' && call.args[0] === 'commit')).toBe(false);
+    expect(calls.some((call) => call.cmd === 'gh')).toBe(false);
+  });
+
   test('exports pending-change helpers', () => {
     const mod = require('../skills/review-and-pr/review-pr');
     expect(typeof mod.hasChanges).toBe('function');

@@ -11,6 +11,7 @@ const {
   CHECKS_DIR,
   BASELINE_RUNNER,
   DEFAULT_REPORT_DIR,
+  REPO_ROOT,
 } = require('../skills/review-gate/run');
 
 const ROOT = path.resolve(path.sep, 'repo');
@@ -94,11 +95,11 @@ describe('review-gate runner helpers', () => {
   });
 
   test('report paths default to docs/reviews/<type>.md and honor --out', () => {
-    expect(resolveReportPath('code', null, { cwd: ROOT }))
-      .toBe(path.join(ROOT, DEFAULT_REPORT_DIR, 'code.md'));
-    expect(resolveReportPath('design', 'custom/report.md', { cwd: ROOT }))
-      .toBe(path.join(ROOT, 'custom', 'report.md'));
-    expect(resolveReportPath('bogus', null, { cwd: ROOT })).toBeNull();
+    expect(resolveReportPath('code', null))
+      .toBe(path.join(REPO_ROOT, DEFAULT_REPORT_DIR, 'code.md'));
+    expect(resolveReportPath('design', 'custom/report.md'))
+      .toBe(path.join(REPO_ROOT, 'custom', 'report.md'));
+    expect(resolveReportPath('bogus', null)).toBeNull();
 
     const defaults = configFs();
     const runChecks = () => ({ results: [{ label: 'npm test', status: 0, output: '' }] });
@@ -109,7 +110,7 @@ describe('review-gate runner helpers', () => {
       getHead: () => HEAD,
       runChecks,
     })).toBe(0);
-    expect(writtenReport(defaults).path).toBe(path.join(ROOT, DEFAULT_REPORT_DIR, 'code.md'));
+    expect(writtenReport(defaults).path).toBe(path.join(REPO_ROOT, DEFAULT_REPORT_DIR, 'code.md'));
 
     const override = configFs();
     expect(runReview(['--type', 'code', '--out', 'reports/custom.md'], {
@@ -119,7 +120,25 @@ describe('review-gate runner helpers', () => {
       getHead: () => HEAD,
       runChecks,
     })).toBe(0);
-    expect(writtenReport(override).path).toBe(path.join(ROOT, 'reports', 'custom.md'));
+    expect(writtenReport(override).path).toBe(path.join(REPO_ROOT, 'reports', 'custom.md'));
+  });
+
+  test('default report path resolves against REPO_ROOT even when cwd differs', () => {
+    const otherCwd = path.join(ROOT, 'nested', 'dir');
+    expect(otherCwd).not.toBe(REPO_ROOT);
+
+    expect(resolveReportPath('code', null, { cwd: otherCwd }))
+      .toBe(path.join(REPO_ROOT, DEFAULT_REPORT_DIR, 'code.md'));
+
+    const fsLib = configFs();
+    expect(runReview(['--type', 'code'], {
+      fsLib,
+      log: jest.fn(),
+      cwd: otherCwd,
+      getHead: () => HEAD,
+      runChecks: () => ({ results: [{ label: 'npm test', status: 0, output: '' }] }),
+    })).toBe(0);
+    expect(writtenReport(fsLib).path).toBe(path.join(REPO_ROOT, DEFAULT_REPORT_DIR, 'code.md'));
   });
 
   test('frontmatter serialization and parsing round-trip parsed fields and body', () => {

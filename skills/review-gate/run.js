@@ -62,9 +62,11 @@ function parseArgs(argv = []) {
 
 function resolveReportPath(type, out, options = {}) {
   if (!VALID_TYPES.includes(type)) return null;
-  const cwd = options.cwd || process.cwd();
   const relative = out || path.join(DEFAULT_REPORT_DIR, `${type}.md`);
-  return path.resolve(cwd, relative);
+  // Reports are anchored to the repository root, not the caller's cwd:
+  // review-and-pr looks for docs/reviews/code.md at the root and would
+  // otherwise report a report written from a subdirectory as missing.
+  return path.resolve(REPO_ROOT, relative);
 }
 
 // Loads checks/<type>.json. Only the shared baseline runner is supported; an
@@ -301,7 +303,7 @@ function runReview(argv = process.argv.slice(2), options = {}) {
     return 2;
   }
 
-  const outPath = resolveReportPath(args.type, args.out, { cwd });
+  const outPath = resolveReportPath(args.type, args.out);
   const head = getHead({ spawnFn, cwd });
 
   let verification;
