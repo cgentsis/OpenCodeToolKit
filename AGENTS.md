@@ -32,6 +32,22 @@
 - Skills that ask the user questions must run in the **main session**.
   Subagents cannot ask the user questions.
 
+## Skill registry
+
+<!-- skill-registry:start -->
+- `create-worktree-on-change`
+- `finish-worktree`
+- `idea-discovery`
+- `implementation`
+- `implementation-planning`
+- `review-and-pr`
+- `skill-authoring`
+- `skill-evals`
+- `solution-brainstorming`
+- `systematic-debugging`
+- `verification-before-completion`
+<!-- skill-registry:end -->
+
 ## Skill pipeline
 
 - Before any non-trivial creative, planning, or implementation work, load the

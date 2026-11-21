@@ -1,0 +1,25 @@
+{
+  "skill_name": "review-and-pr",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "The changes are done. Commit them, push the branch, and open a PR.",
+      "expected_output": "Runs review-and-pr with a dry run or confirmation as specified, commits pending changes, pushes the branch, and opens or reuses a PR. Does not make new code changes."
+    },
+    {
+      "id": 2,
+      "prompt": "Ship it.",
+      "expected_output": "Treats the request as authorization to commit, push, and open a PR, but still follows the skill's confirmation rule unless AUTO_PR=yes was explicitly set."
+    },
+    {
+      "id": 3,
+      "prompt": "Can you preview what the PR workflow would do without changing anything?",
+      "expected_output": "Uses DRY_RUN=yes, logs the planned git and gh commands, makes no changes, and does not call gh."
+    },
+    {
+      "id": 4,
+      "prompt": "I only want to review the diff right now. Don't commit or push.",
+      "expected_output": "Declines to commit, push, or open a PR, explains that this skill is for delivery rather than code review, and leaves the working tree unchanged."
+    }
+  ]
+}

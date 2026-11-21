@@ -1,0 +1,14 @@
+[
+  { "query": "Add a new OpenCode skill to this repository.", "should_trigger": true },
+  { "query": "Create a skill for reviewing database migrations.", "should_trigger": true },
+  { "query": "Update this skill's description and evals.", "should_trigger": true },
+  { "query": "Rename the finish-worktree skill and fix all references.", "should_trigger": true },
+  { "query": "Remove a skill we no longer use.", "should_trigger": true },
+  { "query": "Is this skill discoverable and fully covered by evals?", "should_trigger": true },
+  { "query": "Write a SKILL.md for a new agent.", "should_trigger": false },
+  { "query": "Write an operational runbook for post-merge cleanup.", "should_trigger": false },
+  { "query": "Which other skills should we add to the toolkit?", "should_trigger": false },
+  { "query": "Validate the repository's eval files offline.", "should_trigger": false },
+  { "query": "Open a PR for these skill changes.", "should_trigger": false },
+  { "query": "Fix the failing validator test.", "should_trigger": false }
+]

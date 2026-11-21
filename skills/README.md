@@ -19,6 +19,16 @@ after the PR is merged and is the only stage that removes a worktree.
 
 ## Available skills
 
+<!-- skill-registry:start -->
+Registered skills: `create-worktree-on-change`, `finish-worktree`,
+`idea-discovery`, `implementation`, `implementation-planning`, `review-and-pr`,
+`skill-authoring`, `skill-evals`, `solution-brainstorming`,
+`systematic-debugging`, `verification-before-completion`.
+<!-- skill-registry:end -->
+
+Details for each skill follow below; the marked list above is the registry
+checked by `skills/skill-authoring/validate-skill-set.js`.
+
 ### idea-discovery
 
 Captures the **what** and **why** of a new idea through a Brainstormer and

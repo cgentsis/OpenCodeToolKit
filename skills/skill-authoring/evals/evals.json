@@ -1,0 +1,25 @@
+{
+  "skill_name": "skill-authoring",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add a new skill for checking release notes. Just create the folder and write the SKILL.md.",
+      "expected_output": "Creates the skill under worktree-first, writes SKILL.md with triggering-focused frontmatter, adds evals/evals.json and evals/trigger-evals.json, adds marked README and AGENTS.md entries, and runs both the read-only validator and the offline eval suite before claiming done. Does not skip evals or docs because the user only asked for SKILL.md."
+    },
+    {
+      "id": 2,
+      "prompt": "Rename the review-and-pr skill to ship-it and update everything that points at it.",
+      "expected_output": "Moves the directory, updates skill_name in evals.json, both marked registry entries, any AGENTS.md discovery rule, and doc or script references. Runs the validator and treats stale names in eval paths or registry entries as failures. Does not commit or push."
+    },
+    {
+      "id": 3,
+      "prompt": "We don't use the finish-worktree skill anymore. Remove it.",
+      "expected_output": "Deletes the skill directory, removes its registry entries, discovery rule, and references in ARCHITECTURE.md or scripts, then runs the validator and offline eval suite and confirms no stale references or warnings remain."
+    },
+    {
+      "id": 4,
+      "prompt": "I tweaked a skill description. Do I need to do anything else before I call it done?",
+      "expected_output": "Requires the matching trigger-eval update, a worktree-first check, and both validation commands with observed output. References global skill-creator and writing-skills for generic guidance rather than restating it, and follows verification-before-completion."
+    }
+  ]
+}
