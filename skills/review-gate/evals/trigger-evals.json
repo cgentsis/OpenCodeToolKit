@@ -1,0 +1,16 @@
+[
+  { "query": "Review this code before we hand it off.", "should_trigger": true },
+  { "query": "Gate this design before we start building it.", "should_trigger": true },
+  { "query": "Review the specs for the new feature.", "should_trigger": true },
+  { "query": "Run a read-only review of the current diff and give me an approval flag.", "should_trigger": true },
+  { "query": "Use code-review-gate on the current diff.", "should_trigger": true },
+  { "query": "Run design-review-gate on this proposal.", "should_trigger": true },
+  { "query": "specs-review-gate this document please.", "should_trigger": true },
+  { "query": "Fix the failing test.", "should_trigger": false },
+  { "query": "Implement the new feature in the API.", "should_trigger": false },
+  { "query": "Debug why the build is broken.", "should_trigger": false },
+  { "query": "Commit these changes and push the branch.", "should_trigger": false },
+  { "query": "Open a PR for this work.", "should_trigger": false },
+  { "query": "Ship it.", "should_trigger": false },
+  { "query": "Add eval files for a new skill.", "should_trigger": false }
+]
