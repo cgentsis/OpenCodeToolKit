@@ -77,3 +77,8 @@ numbered for clear verification. Task 08 waits for all earlier work.
 - After approval, make a separate handoff decision to `implementation`.
 - No solution-level open questions remain; exact helper internals are left to
   implementation within the contracts above.
+
+### TDD Evidence
+
+Exempt: docs/config-only
+Reason: This file is a plan index with no executable behavior and no task status to validate.
