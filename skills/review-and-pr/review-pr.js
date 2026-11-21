@@ -1,5 +1,9 @@
 const { execFileSync } = require('child_process');
 const readline = require('readline');
+const {
+  checkReviewReport,
+  REMEDIATION_MESSAGE,
+} = require('../review-gate/check-review-report');
 
 function log(message) {
   console.log(message);
@@ -150,6 +154,20 @@ function askYesNo(message) {
 }
 
 async function run(options = {}) {
+  // Fail closed before any commit, prompt, push, or gh call. `checkReport` is a
+  // test seam; production always uses the real report checker.
+  const checkReport = options.checkReport || checkReviewReport;
+  const reviewCheck = checkReport({
+    cwd: options.cwd,
+    reportPath: options.reportPath,
+  }) || {};
+  if (!Array.isArray(reviewCheck.errors) || reviewCheck.errors.length > 0) {
+    const details = Array.isArray(reviewCheck.errors) && reviewCheck.errors.length
+      ? reviewCheck.errors.map((message) => `- ${message}`).join('\n')
+      : `- ${REMEDIATION_MESSAGE}`;
+    throw new Error(`Code review report check failed:\n${details}`);
+  }
+
   const branch = options.branch || process.env.BRANCH || getCurrentBranch();
   if (!branch) throw new Error('Unable to determine current branch or worktree name.');
   if (!branchExists(branch)) throw new Error(`Branch "${branch}" does not exist.`);
