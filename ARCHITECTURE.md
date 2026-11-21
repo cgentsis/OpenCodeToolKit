@@ -23,6 +23,9 @@ architecture document.
   baseline checks in one step. The helper is an accelerator, not a required gate.
 - `skills/systematic-debugging/` — guidance-only `SKILL.md` and eval files. It
   enforces a hard-stop regression checkpoint before any fix; no helper script.
+- `skills/test-driven-development/` — a `SKILL.md` with eval files plus a
+  minimal `check-tdd-evidence.js` validator. The skill owns the red/green/refactor
+  gate; the validator checks the evidence recorded in plan task status.
 - `skills/skill-authoring/` — a `SKILL.md` covering the full skill lifecycle
   (create, update, rename, remove), eval files, and a read-only validator
   (`validate-skill-set.js`) that checks eval coverage, marked registry entries,
@@ -107,6 +110,22 @@ hard gate, and verification rules. `implementation` is not a council skill.
 - If reproduction fails after reasonable effort, stop and report the attempts
   and evidence instead of proposing a speculative fix.
 - Completion claims still depend on `verification-before-completion`.
+
+## TDD conventions
+
+- `test-driven-development` is a direct software-work skill; it does not replace
+  `systematic-debugging`, choose a test runner, or write production code.
+- Implementation tasks that change executable behavior must include a
+  `### TDD Evidence` section in their task status with Red, Green, and Refactor
+  entries. Red and Green each require the command and the observed result.
+- Docs/config-only tasks are exempt when the same section contains an
+  `Exempt: docs/config-only` line and a one-line reason.
+- `check-tdd-evidence.js` is the single source of truth for evidence validity.
+  `implementation` invokes it before marking a non-exempt task complete.
+- PR-time checking is a backstop: it reuses the same validator over plan task
+  files changed relative to the PR base, rather than introducing a second format.
+- The local proxy for the lagging “fewer regressions” goal is evidence
+  completeness: 100% of applicable tasks have valid red/green records.
 
 ## Verification conventions
 

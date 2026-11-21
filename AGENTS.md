@@ -49,6 +49,7 @@
 - `solution-brainstorming`
 - `specs-review-gate`
 - `systematic-debugging`
+- `test-driven-development`
 - `verification-before-completion`
 <!-- skill-registry:end -->
 

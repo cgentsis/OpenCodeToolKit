@@ -138,6 +138,65 @@ describe('review-and-PR skill', () => {
     }
   });
 
+  test('validates changed plan task files before creating a PR', async () => {
+    setup({ 'git diff': 'docs/plans/x/01-task.md\nREADME.md\n' });
+    const validateFiles = jest.fn(() => ({ ok: true, results: [] }));
+
+    await runWithReport({
+      autoApprove: true,
+      branch: 'test-branch',
+      baseBranch: 'main',
+      validateFiles,
+    });
+
+    expect(called('git', ['diff', '--name-only', 'main...HEAD', '--', 'docs/plans'])).toBe(true);
+    expect(validateFiles).toHaveBeenCalledWith(['docs/plans/x/01-task.md']);
+    expect(calls.some((call) => call.cmd === 'gh' && call.args[0] === 'pr' && call.args[1] === 'create'))
+      .toBe(true);
+  });
+
+  test('skips TDD validation when no plan task files changed', async () => {
+    setup({ 'git diff': '' });
+    const validateFiles = jest.fn(() => ({ ok: true, results: [] }));
+
+    await runWithReport({
+      autoApprove: true,
+      branch: 'test-branch',
+      baseBranch: 'main',
+      validateFiles,
+    });
+
+    expect(validateFiles).not.toHaveBeenCalled();
+  });
+
+  test('fails closed when the changed-file lookup fails', async () => {
+    setup({ 'git diff': new Error('bad base ref') });
+
+    await expect(
+      runWithReport({ autoApprove: true, branch: 'test-branch', baseBranch: 'missing' })
+    ).rejects.toThrow('bad base ref');
+  });
+
+  test('a failed TDD backstop blocks commit and PR creation', async () => {
+    setup({ 'git diff': 'docs/plans/x/01-task.md\n' });
+    const validateFiles = jest.fn(() => ({
+      ok: false,
+      results: [{ file: 'docs/plans/x/01-task.md', ok: false, errors: ['missing Red entry'] }],
+    }));
+
+    await expect(
+      runWithReport({
+        autoApprove: true,
+        branch: 'test-branch',
+        baseBranch: 'main',
+        validateFiles,
+      })
+    ).rejects.toThrow('TDD evidence backstop failed');
+
+    expect(calls.some((call) => call.cmd === 'git' && call.args[0] === 'commit')).toBe(false);
+    expect(calls.some((call) => call.cmd === 'gh')).toBe(false);
+  });
+
   test('blocks before commit or gh when the review report check fails', async () => {
     const checkReport = jest.fn(() => ({
       ok: false,
@@ -167,9 +226,11 @@ describe('review-and-PR skill', () => {
     expect(calls.some((call) => call.cmd === 'gh')).toBe(false);
   });
 
-  test('exports pending-change helpers', () => {
+  test('exports pending-change and backstop helpers', () => {
     const mod = require('../skills/review-and-pr/review-pr');
     expect(typeof mod.hasChanges).toBe('function');
     expect(typeof mod.getPendingChanges).toBe('function');
+    expect(typeof mod.getChangedTaskFiles).toBe('function');
+    expect(typeof mod.checkTddBackstop).toBe('function');
   });
 });

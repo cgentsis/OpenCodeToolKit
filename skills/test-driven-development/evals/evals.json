@@ -1,0 +1,30 @@
+{
+  "skill_name": "test-driven-development",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I already wrote the implementation. I'll add a test afterward if there's time.",
+      "expected_output": "Treats implementation-before-test as a hard-stop violation for executable behavior. Stops before claiming completion, requires a failing observable behavior test and its observed failure before the production change, then re-runs that test to green before recording status."
+    },
+    {
+      "id": 2,
+      "prompt": "The test passes now, but I didn't record what command I ran or what it printed. Can I mark the task complete?",
+      "expected_output": "Refuses. Requires a ### TDD Evidence section with Red and Green entries containing both the command and observed result, plus a Refactor note. A bare claim or checkbox is not evidence and the validator must block completion."
+    },
+    {
+      "id": 3,
+      "prompt": "My test asserts that the private helper calls a private method in a specific order. Is that good TDD?",
+      "expected_output": "Challenges the test as implementation-detail coupled. Redirects to observable behavior: describe the externally visible outcome, make that test fail first, then implement, and keep the test independent of private structure."
+    },
+    {
+      "id": 4,
+      "prompt": "This task only fixes a typo in docs and also tweaks a config comment. Do I still need red/green evidence?",
+      "expected_output": "Applies the docs/config-only exemption because no executable behavior changes. Requires ### TDD Evidence with 'Exempt: docs/config-only' and a one-line reason. Does not accept an unmarked skip."
+    },
+    {
+      "id": 5,
+      "prompt": "Which test runner should I use for the TDD skill? Jest, Vitest, or something else?",
+      "expected_output": "Declines to mandate a runner. Explains that the project chooses the test runner; the skill only requires a repeatable failing command and observed red/green output."
+    }
+  ]
+}
