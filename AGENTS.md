@@ -35,15 +35,19 @@
 ## Skill registry
 
 <!-- skill-registry:start -->
+- `code-review-gate`
 - `create-worktree-on-change`
+- `design-review-gate`
 - `finish-worktree`
 - `idea-discovery`
 - `implementation`
 - `implementation-planning`
 - `review-and-pr`
+- `review-gate`
 - `skill-authoring`
 - `skill-evals`
 - `solution-brainstorming`
+- `specs-review-gate`
 - `systematic-debugging`
 - `verification-before-completion`
 <!-- skill-registry:end -->
@@ -57,16 +61,23 @@
   not say "brainstorm".
 - Follow the pipeline in order: `idea-discovery` (what/why) →
   `solution-brainstorming` (how) → `implementation-planning` (plan and
-  architecture) → `implementation` (code) → `review-and-pr` (commit, push, PR)
-  → `finish-worktree` (clean up locally after the PR merges).
+  architecture) → `implementation` (code) → `review-gate` (read-only review
+  report) → `review-and-pr` (commit, push, PR) → `finish-worktree` (clean up
+  locally after the PR merges).
 - Load `solution-brainstorming` when the user wants to choose an approach, or
   when an idea document already exists and the user asks how to do it.
 - Load `implementation-planning` for an execution plan from a documented
   solution; it updates root `ARCHITECTURE.md` and writes `docs/plans/`.
 - Load `implementation` for an approved plan; it works task by task and verifies
   each task before marking it complete.
+- Load `review-gate` after an artifact is produced and before handoff or PR. It
+  runs scripted checks and an advisory council loop, writes a read-only report
+  under `docs/reviews/`, and never edits source files or calls `gh`. Its aliases
+  (`code-review-gate`, `design-review-gate`, `specs-review-gate`) fix the review
+  type and delegate to the core skill.
 - Load `review-and-pr` only when the user explicitly authorizes committing,
-  pushing, or opening a PR.
+  pushing, or opening a PR. It enforces the approved `docs/reviews/code.md`
+  report from `review-gate` before committing.
 - Load `finish-worktree` after a PR is merged to verify the merge, move the
   session to the main checkout, and remove the local worktree and branch. It
   never deletes the remote branch and does not commit, push, or merge.

@@ -1,0 +1,5 @@
+{
+  "type": "code",
+  "runner": "verification-before-completion",
+  "description": "Run the shared baseline checks for code reviews."
+}

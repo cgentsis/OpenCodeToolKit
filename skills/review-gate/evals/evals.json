@@ -1,0 +1,23 @@
+{
+  "skill_name": "review-gate",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review this code before we hand it off.",
+      "expected_output": "Runs the review-gate runner with --type code, reads back the review report at docs/reviews/code.md, and runs the mandatory advisory council loop. Appends the council's questions and findings to the report's advisory council appendix while keeping scripted_verdict authoritative. Leaves approved: false until explicit user approval and writes no source files, commits, or PRs.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Gate this design before we start building it.",
+      "expected_output": "Runs --type design and produces a review report with a check-results table and frontmatter. Appends the reviewer and devil's advocate findings to the advisory council appendix, treats them as advisory only, and does not edit the design artifact or source files or approve the report without explicit user approval.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Review the specs for the new feature.",
+      "expected_output": "Runs --type specs, writes the report at docs/reviews/specs.md, and includes an advisory council appendix with council questions and findings. Preserves the runner's scripted_verdict and recorded HEAD, leaves approval to the user, and never commits, pushes, or calls gh.",
+      "files": []
+    }
+  ]
+}
