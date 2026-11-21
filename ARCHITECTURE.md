@@ -30,6 +30,10 @@ architecture document.
   (create, update, rename, remove), eval files, and a read-only validator
   (`validate-skill-set.js`) that checks eval coverage, marked registry entries,
   and `SKILL.md` discovery.
+- `skills/review-gate/` — a `SKILL.md`, a read-only `run.js` CLI, `checks/<type>.json`
+  checklists, eval files, and a machine-readable alias registry. Three thin alias
+  wrappers (`code-review-gate`, `design-review-gate`, `specs-review-gate`) delegate
+  to the core. Reports are written under `docs/reviews/`.
 - Root-level `run-*.js` and `*-worktree.js` scripts — CLI entrypoints for
   script-backed skills. Skills invoke them from the repository root.
 - `test/` — Jest unit tests. Scripts must expose pure helpers where practical
@@ -45,10 +49,12 @@ architecture document.
 ## Skill pipeline
 
 `idea-discovery` → `solution-brainstorming` → `implementation-planning` →
-`implementation` → `review-and-pr` → `finish-worktree`, with
-`create-worktree-on-change` as the mandatory pre-change gate. Each stage
-requires the previous stage's artifact on disk and hands off only after an
-explicit decision.
+`implementation` → `review-gate` → `review-and-pr` → `finish-worktree`, with
+`create-worktree-on-change` as the mandatory pre-change gate. `review-and-pr`
+enforces the approved `docs/reviews/code.md` report produced by `review-gate`
+and stops before committing, pushing, or opening a PR when it is missing,
+stale, or not approved. Each stage requires the previous stage's artifact on
+disk and hands off only after an explicit decision.
 
 Council skills share `skills/_shared/council-protocol.md` for the question loop,
 hard gate, and verification rules. `implementation` is not a council skill.
@@ -67,6 +73,16 @@ hard gate, and verification rules. `implementation` is not a council skill.
 - Read-only validators report findings without writing files. They reuse
   existing helpers instead of duplicating validation logic and fail closed on
   ambiguous input.
+- `review-gate/run.js` is a read-only review runner: it executes the commands
+  listed in `checks/<type>.json`, captures their output, and writes a Markdown
+  report with YAML frontmatter under `docs/reviews/`. It never edits source
+  files or calls `gh`. Frontmatter fields include `type`, `head`,
+  `scripted_verdict`, `advisory_notes`, and `approved`; the scripted verdict is
+  authoritative and the council appendix is advisory only.
+- Alias wrappers are declared in `review-gate/SKILL.md` frontmatter under
+  `aliases:`. The validator exempts declared aliases from per-skill eval files
+  but fails closed on any undeclared wrapper directory whose `SKILL.md` marks it
+  as an alias.
 
 ## Eval runner conventions
 
@@ -78,6 +94,10 @@ hard gate, and verification rules. `implementation` is not a council skill.
 - Skill-set validators reuse `discoverSkills` and `validateSkill` from
   `skills/skill-evals/`; the accepted bar for the skill set is 0 errors and 0
   warnings offline.
+- Skill directories listed as aliases in `review-gate/SKILL.md` are exempt from
+  the eval-file requirement. The exemption is fail-closed: the aliases must be
+  declared by the core skill, and the validator reports unknown or stale
+  aliases as errors.
 
 ## Debugging conventions
 
@@ -121,6 +141,11 @@ hard gate, and verification rules. `implementation` is not a council skill.
 - Documentation-only changes get no exemption from the baseline checks.
 - For skill changes, run `node skills/skill-authoring/validate-skill-set.js` as
   a task-specific check in addition to the baseline checks.
+- For code delivered through `review-and-pr`, an approved review report is
+  required. `review-and-pr` checks `docs/reviews/code.md` at the start of its
+  workflow, requires `approved: true`, `scripted_verdict: pass`, and a `head`
+  equal to the current `HEAD`, and stops before committing or pushing when the
+  report is missing, stale, or not approved.
 - A dry run must be side-effect free and must not call `gh`.
 - The eval runner's offline mode must not call `opencode` or any LLM.
 

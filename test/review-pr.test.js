@@ -3,6 +3,14 @@ jest.mock('child_process', () => ({ execFileSync: jest.fn() }));
 const childProcess = require('child_process');
 const { run } = require('../skills/review-and-pr/review-pr');
 
+const PASSING_REPORT = { ok: true, errors: [] };
+
+// Existing workflow tests focus on git/gh behavior; inject a passing report so
+// they do not depend on a real docs/reviews/code.md fixture.
+function runWithReport(options = {}) {
+  return run({ checkReport: () => PASSING_REPORT, ...options });
+}
+
 let calls;
 
 function setup(overrides = {}) {
@@ -45,7 +53,7 @@ describe('review-and-PR skill', () => {
 
   test('runs without prompting in auto-approve mode', async () => {
     await expect(
-      run({ autoApprove: true, branch: 'test-branch', baseBranch: 'main' })
+      runWithReport({ autoApprove: true, branch: 'test-branch', baseBranch: 'main' })
     ).resolves.toBeUndefined();
 
     expect(calls.some((call) => call.cmd === 'gh' && call.args[0] === 'pr' && call.args[1] === 'create'))
@@ -55,7 +63,7 @@ describe('review-and-PR skill', () => {
   test('skips the commit when the working tree is clean', async () => {
     setup({ 'git status': '' });
 
-    await run({ autoApprove: true, branch: 'test-branch', baseBranch: 'main' });
+    await runWithReport({ autoApprove: true, branch: 'test-branch', baseBranch: 'main' });
 
     expect(calls.some((call) => call.cmd === 'git' && call.args[0] === 'commit')).toBe(false);
   });
@@ -63,14 +71,14 @@ describe('review-and-PR skill', () => {
   test('reuses an existing open PR', async () => {
     setup({ 'gh pr list': '[{"url":"https://github.com/example/repo/pull/9"}]' });
 
-    await run({ autoApprove: true, branch: 'test-branch', baseBranch: 'main' });
+    await runWithReport({ autoApprove: true, branch: 'test-branch', baseBranch: 'main' });
 
     expect(calls.some((call) => call.cmd === 'gh' && call.args[0] === 'pr' && call.args[1] === 'create'))
       .toBe(false);
   });
 
   test('stages only the configured paths', async () => {
-    await run({
+    await runWithReport({
       autoApprove: true,
       branch: 'test-branch',
       baseBranch: 'main',
@@ -81,7 +89,7 @@ describe('review-and-PR skill', () => {
   });
 
   test('does not push during a dry run', async () => {
-    await run({ autoApprove: true, branch: 'test-branch', baseBranch: 'main', dryRun: true });
+    await runWithReport({ autoApprove: true, branch: 'test-branch', baseBranch: 'main', dryRun: true });
 
     expect(calls.some((call) => call.cmd === 'git' && call.args[0] === 'push')).toBe(false);
   });
@@ -90,14 +98,14 @@ describe('review-and-PR skill', () => {
     setup({ 'git push': new Error('push failed') });
 
     await expect(
-      run({ autoApprove: true, branch: 'test-branch', baseBranch: 'main' })
+      runWithReport({ autoApprove: true, branch: 'test-branch', baseBranch: 'main' })
     ).rejects.toThrow('push failed');
   });
 
   test('dry run makes no gh calls and does not claim a PR was created', async () => {
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     try {
-      await run({ autoApprove: true, branch: 'test-branch', baseBranch: 'main', dryRun: true });
+      await runWithReport({ autoApprove: true, branch: 'test-branch', baseBranch: 'main', dryRun: true });
 
       expect(calls.some((call) => call.cmd === 'gh')).toBe(false);
       const messages = logSpy.mock.calls.map((args) => args.join(' '));
@@ -111,7 +119,7 @@ describe('review-and-PR skill', () => {
 
   test('dry run does not require interactive approval', async () => {
     await expect(
-      run({ branch: 'test-branch', baseBranch: 'main', dryRun: true })
+      runWithReport({ branch: 'test-branch', baseBranch: 'main', dryRun: true })
     ).resolves.toBeUndefined();
 
     expect(calls.some((call) => call.cmd === 'gh')).toBe(false);
@@ -120,7 +128,7 @@ describe('review-and-PR skill', () => {
   test('shows pending changes before staging', async () => {
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     try {
-      await run({ autoApprove: true, branch: 'test-branch', baseBranch: 'main' });
+      await runWithReport({ autoApprove: true, branch: 'test-branch', baseBranch: 'main' });
 
       const messages = logSpy.mock.calls.map((args) => args.join(' '));
       expect(messages.some((msg) => msg.includes('Pending changes to stage:'))).toBe(true);
@@ -134,7 +142,7 @@ describe('review-and-PR skill', () => {
     setup({ 'git diff': 'docs/plans/x/01-task.md\nREADME.md\n' });
     const validateFiles = jest.fn(() => ({ ok: true, results: [] }));
 
-    await run({
+    await runWithReport({
       autoApprove: true,
       branch: 'test-branch',
       baseBranch: 'main',
@@ -151,7 +159,7 @@ describe('review-and-PR skill', () => {
     setup({ 'git diff': '' });
     const validateFiles = jest.fn(() => ({ ok: true, results: [] }));
 
-    await run({
+    await runWithReport({
       autoApprove: true,
       branch: 'test-branch',
       baseBranch: 'main',
@@ -165,7 +173,7 @@ describe('review-and-PR skill', () => {
     setup({ 'git diff': new Error('bad base ref') });
 
     await expect(
-      run({ autoApprove: true, branch: 'test-branch', baseBranch: 'missing' })
+      runWithReport({ autoApprove: true, branch: 'test-branch', baseBranch: 'missing' })
     ).rejects.toThrow('bad base ref');
   });
 
@@ -177,7 +185,7 @@ describe('review-and-PR skill', () => {
     }));
 
     await expect(
-      run({
+      runWithReport({
         autoApprove: true,
         branch: 'test-branch',
         baseBranch: 'main',
@@ -185,6 +193,35 @@ describe('review-and-PR skill', () => {
       })
     ).rejects.toThrow('TDD evidence backstop failed');
 
+    expect(calls.some((call) => call.cmd === 'git' && call.args[0] === 'commit')).toBe(false);
+    expect(calls.some((call) => call.cmd === 'gh')).toBe(false);
+  });
+
+  test('blocks before commit or gh when the review report check fails', async () => {
+    const checkReport = jest.fn(() => ({
+      ok: false,
+      errors: ['Run code-review-gate and approve the report before committing or pushing.'],
+    }));
+
+    await expect(
+      run({ checkReport, branch: 'test-branch', baseBranch: 'main', dryRun: true })
+    ).rejects.toThrow('Code review report check failed');
+
+    expect(checkReport).toHaveBeenCalledTimes(1);
+    expect(calls.some((call) => call.cmd === 'git' && call.args[0] === 'add')).toBe(false);
+    expect(calls.some((call) => call.cmd === 'git' && call.args[0] === 'commit')).toBe(false);
+    expect(calls.some((call) => call.cmd === 'gh')).toBe(false);
+  });
+
+  test('blocks when the checker reports ok: false with no errors', async () => {
+    const checkReport = jest.fn(() => ({ ok: false, errors: [] }));
+
+    await expect(
+      run({ checkReport, branch: 'test-branch', baseBranch: 'main', dryRun: true })
+    ).rejects.toThrow('Code review report check failed');
+
+    expect(checkReport).toHaveBeenCalledTimes(1);
+    expect(calls.some((call) => call.cmd === 'git' && call.args[0] === 'add')).toBe(false);
     expect(calls.some((call) => call.cmd === 'git' && call.args[0] === 'commit')).toBe(false);
     expect(calls.some((call) => call.cmd === 'gh')).toBe(false);
   });

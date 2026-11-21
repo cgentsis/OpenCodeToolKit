@@ -1,0 +1,5 @@
+{
+  "type": "specs",
+  "runner": "verification-before-completion",
+  "description": "Run the shared baseline checks for specification reviews."
+}

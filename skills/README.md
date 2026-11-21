@@ -6,23 +6,30 @@ file, and `opencode.jsonc` registers this directory via `skills.paths`.
 ## Pipeline
 
 ```
-idea-discovery → solution-brainstorming → implementation-planning → implementation → review-and-pr → finish-worktree
-   what / why        how / approach          plan + architecture       code         commit + PR      local cleanup
-       │                    │                       │                   │               │               │
-   docs/ideas/*      ## Solution section     docs/plans/*/*       task ## Status      PR URL      worktree removed
+idea-discovery → solution-brainstorming → implementation-planning → implementation → review-gate → review-and-pr → finish-worktree
+  what / why         how / approach         plan + architecture          code       review report   commit + PR     local cleanup
+       │                    │                        │                     │              │              │                │
+ docs/ideas/*      ## Solution section         docs/plans/*/*       task ## Status  docs/reviews/*     PR URL      worktree removed
 ```
 
 Each stage requires the previous stage's artifact on disk and hands off only
 after an explicit decision. `create-worktree-on-change` is a mandatory
-pre-change step used by every skill that writes files. `finish-worktree` runs
-after the PR is merged and is the only stage that removes a worktree.
+pre-change step used by every skill that writes files. `review-gate` is the
+required read-only review step between implementation and PR: its core skill
+runs scripted checks followed by an advisory council loop and writes
+`docs/reviews/<type>.md`. Three aliases — `code-review-gate`,
+`design-review-gate`, and `specs-review-gate` — each fix the review type and
+delegate to the core skill. `review-and-pr` enforces the approved
+`docs/reviews/code.md` report. `finish-worktree` runs after the PR is merged and
+is the only stage that removes a worktree.
 
 ## Available skills
 
 <!-- skill-registry:start -->
-Registered skills: `create-worktree-on-change`, `finish-worktree`,
-`idea-discovery`, `implementation`, `implementation-planning`, `review-and-pr`,
-`skill-authoring`, `skill-evals`, `solution-brainstorming`,
+Registered skills: `code-review-gate`, `create-worktree-on-change`,
+`design-review-gate`, `finish-worktree`, `idea-discovery`, `implementation`,
+`implementation-planning`, `review-and-pr`, `review-gate`, `skill-authoring`,
+`skill-evals`, `solution-brainstorming`, `specs-review-gate`,
 `systematic-debugging`, `test-driven-development`,
 `verification-before-completion`.
 <!-- skill-registry:end -->
@@ -63,14 +70,46 @@ and offers `solution-brainstorming`.
 
 Executes an approved plan. Validates the plan index and task files, works
 through tasks in dependency order, runs each task's verification before
-recording a truthful `## Status` with evidence, and hands off to
-`review-and-pr`. It does not design, plan, commit, push, or open a PR itself.
+recording a truthful `## Status` with evidence, and hands off to `review-gate`.
+It does not design, plan, commit, push, or open a PR itself.
+
+### review-gate
+
+Runs a repeatable, read-only review of code, a design, or a spec and writes a
+standardized Markdown report with an explicit approval flag. It is a required
+step between `implementation` and `review-and-pr`: scripted checks run first,
+then a mandatory advisory council loop, and the report is approved only after
+all checks pass and the user explicitly approves. It never edits source files,
+commits, pushes, or calls `gh`.
+
+From the repository root:
+
+```bash
+node skills/review-gate/run.js --type code
+node skills/review-gate/run.js --type design --out docs/reviews/my-design.md
+node skills/review-gate/run.js --help
+```
+
+| Option | Argument | Default | Purpose |
+| --- | --- | --- | --- |
+| `--type` | `code` \| `design` \| `specs` | — | Review type; selects the check config and the default report path. |
+| `--out` | `<path>` | `docs/reviews/<type>.md` | Report output path. |
+| `--help` | — | — | Print usage and exit. |
+
+The default report path is `docs/reviews/<type>.md`. The report frontmatter
+contains `type`, `head`, `scripted_verdict`, `advisory_notes`, and `approved`.
+`review-and-pr` enforces the approved `docs/reviews/code.md` report.
+
+Three alias wrappers — `code-review-gate`, `design-review-gate`, and
+`specs-review-gate` — add no logic of their own. Each fixes the type (`code`,
+`design`, or `specs`) and delegates to this core skill.
 
 ### review-and-pr
 
 Commits pending changes, pushes the current branch, and opens or reuses a GitHub
 pull request. It prompts for confirmation unless `AUTO_PR=yes` is set; set that
-only with explicit user authorization.
+only with explicit user authorization. It enforces the approved
+`docs/reviews/code.md` report produced by `review-gate` before committing.
 
 ```bash
 node run-review-pr.js

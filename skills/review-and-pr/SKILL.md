@@ -20,11 +20,19 @@ description: >-
 1. **Check authorization.** Proceed automatically only if the user explicitly
    asked to commit, push, or open a PR (for example, "ship it"). Otherwise,
    confirm with the user before pushing or creating a PR.
-2. **Review what will be committed.** Run `git status --short` from the
+2. **Require an approved code review report.** Before any commit, push, or `gh`
+   call, the workflow checks `docs/reviews/code.md`. The report must exist,
+   have `approved: true`, have `scripted_verdict: pass`, and record the current
+   `HEAD`. If it is missing, stale, unapproved, or based on failed checks, the
+   script stops with an error telling you to run `code-review-gate` and approve
+   the report. Run `node skills/review-gate/run.js --type code`, read the
+   results, and only set `approved: true` after the user explicitly approves
+   the report. `DRY_RUN=yes` does not bypass this requirement.
+3. **Review what will be committed.** Run `git status --short` from the
    repository root. If the change set is known, pass it as `COMMIT_PATHS` so
    unrelated or untracked files are not staged. The script also prints the
    pending changes before staging.
-3. **Run the workflow from the repository root:**
+4. **Run the workflow from the repository root:**
 
    ```bash
    node run-review-pr.js
@@ -39,7 +47,7 @@ description: >-
    AUTO_PR=yes node run-review-pr.js
    ```
 
-4. Report the PR URL printed by the command.
+5. Report the PR URL printed by the command.
 
 ## Options
 
@@ -57,6 +65,8 @@ description: >-
 
 ## Requirements
 
+- An approved, HEAD-fresh `docs/reviews/code.md` must exist. The script checks
+  it before committing and never pushes or creates a PR without it.
 - The `origin` remote must exist.
 - The GitHub CLI (`gh`) must be installed and authenticated (`gh auth login`).
 - The script skips the commit when the working tree is clean.
@@ -69,7 +79,7 @@ DRY_RUN=yes node run-review-pr.js
 ```
 
 A dry run does not call `gh` or change anything; it only logs the commands it
-would execute.
+would execute. It still enforces the approved review report requirement.
 
 ## Verification
 
