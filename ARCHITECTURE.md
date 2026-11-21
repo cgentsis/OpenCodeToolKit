@@ -23,6 +23,10 @@ architecture document.
   baseline checks in one step. The helper is an accelerator, not a required gate.
 - `skills/systematic-debugging/` — guidance-only `SKILL.md` and eval files. It
   enforces a hard-stop regression checkpoint before any fix; no helper script.
+- `skills/skill-authoring/` — a `SKILL.md` covering the full skill lifecycle
+  (create, update, rename, remove), eval files, and a read-only validator
+  (`validate-skill-set.js`) that checks eval coverage, marked registry entries,
+  and `SKILL.md` discovery.
 - Root-level `run-*.js` and `*-worktree.js` scripts — CLI entrypoints for
   script-backed skills. Skills invoke them from the repository root.
 - `test/` — Jest unit tests. Scripts must expose pure helpers where practical
@@ -57,6 +61,9 @@ hard gate, and verification rules. `implementation` is not a council skill.
   `skills/README.md`.
 - `manifest.jsonc` files are illustrative metadata only. Nothing in this
   repository dispatches them.
+- Read-only validators report findings without writing files. They reuse
+  existing helpers instead of duplicating validation logic and fail closed on
+  ambiguous input.
 
 ## Eval runner conventions
 
@@ -65,6 +72,9 @@ hard gate, and verification rules. `implementation` is not a council skill.
   default), and never a CI gate.
 - Live checks spawn the `opencode` CLI with argument arrays and `shell: false`.
 - v1 emits human-readable logs only; a machine-readable report is deferred.
+- Skill-set validators reuse `discoverSkills` and `validateSkill` from
+  `skills/skill-evals/`; the accepted bar for the skill set is 0 errors and 0
+  warnings offline.
 
 ## Debugging conventions
 
@@ -90,6 +100,8 @@ hard gate, and verification rules. `implementation` is not a council skill.
   exits non-zero on any failure. It uses only Node built-ins and is never a CI
   gate.
 - Documentation-only changes get no exemption from the baseline checks.
+- For skill changes, run `node skills/skill-authoring/validate-skill-set.js` as
+  a task-specific check in addition to the baseline checks.
 - A dry run must be side-effect free and must not call `gh`.
 - The eval runner's offline mode must not call `opencode` or any LLM.
 

@@ -1,0 +1,25 @@
+{
+  "skill_name": "create-worktree-on-change",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We need to change the review script. Go ahead and edit it in place.",
+      "expected_output": "Stops before editing and uses create-worktree-on-change to create or reuse an isolated worktree, then performs the edit there. Never edits the main checkout."
+    },
+    {
+      "id": 2,
+      "prompt": "Start work on a new feature in its own worktree called feature-x.",
+      "expected_output": "Creates or reuses worktrees/feature-x using ensure-worktree.js, reports the branch and worktree path, and uses that path for subsequent commands."
+    },
+    {
+      "id": 3,
+      "prompt": "I already have a worktree for this branch. Just continue there.",
+      "expected_output": "Detects the linked worktree, reuses it without recreating or resetting the branch, and continues work in that directory."
+    },
+    {
+      "id": 4,
+      "prompt": "The worktree command failed. Can we just make the change in the main checkout this once?",
+      "expected_output": "Refuses the fallback, reports the failure, and asks the user how to proceed. Does not edit the main checkout."
+    }
+  ]
+}

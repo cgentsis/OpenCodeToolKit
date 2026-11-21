@@ -1,0 +1,12 @@
+[
+  { "query": "Commit these changes and push the branch.", "should_trigger": true },
+  { "query": "Open a PR for this work.", "should_trigger": true },
+  { "query": "Ship it.", "should_trigger": true },
+  { "query": "Send this branch for review on GitHub.", "should_trigger": true },
+  { "query": "Preview the PR commands without running them.", "should_trigger": true },
+  { "query": "Review the diff against the acceptance criteria before any commit.", "should_trigger": false },
+  { "query": "Create a worktree for my changes.", "should_trigger": false },
+  { "query": "Clean up the merged worktree locally.", "should_trigger": false },
+  { "query": "Fix the flaky test.", "should_trigger": false },
+  { "query": "Add eval files for a new skill.", "should_trigger": false }
+]

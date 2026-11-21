@@ -1,0 +1,11 @@
+[
+  { "query": "Before I edit these files, set up an isolated worktree.", "should_trigger": true },
+  { "query": "Start work on a new feature in a separate worktree.", "should_trigger": true },
+  { "query": "Create or reuse a worktree for branch fix-parser.", "should_trigger": true },
+  { "query": "I need to make a change but don't want to touch main.", "should_trigger": true },
+  { "query": "Continue working in the linked worktree I already have.", "should_trigger": true },
+  { "query": "Clean up the worktree after the PR merged.", "should_trigger": false },
+  { "query": "Open a PR and push the branch.", "should_trigger": false },
+  { "query": "Fix the failing validator test.", "should_trigger": false },
+  { "query": "Write a new skill for checking migrations.", "should_trigger": false }
+]
