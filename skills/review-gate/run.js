@@ -177,6 +177,30 @@ function escapeCell(value) {
   return text || '-';
 }
 
+// Single source of truth for both the report verdict and the CLI exit code.
+// Malformed/falsy entries count as failures and are normalized so rendering
+// can never dereference them.
+function summarizeResults(results) {
+  const checks = (Array.isArray(results) ? results : []).map((result) => (
+    result && typeof result === 'object'
+      ? result
+      : { label: 'check', status: null, output: 'invalid result' }
+  ));
+  const failed = checks.filter((result) => result.status !== 0);
+  return {
+    checks,
+    failed,
+    // Fail closed: no checks (or any non-zero status) means no pass verdict.
+    verdict: checks.length > 0 && failed.length === 0 ? 'pass' : 'fail',
+  };
+}
+
+function formatStatus(status) {
+  if (status === 0) return 'PASS';
+  if (status === null || status === undefined) return 'FAIL (invalid result)';
+  return `FAIL (exit ${status})`;
+}
+
 // Accepts an options object (preferred) or positional (type, head, results).
 function buildReport(options = {}, ...positional) {
   const input = typeof options === 'string'
@@ -191,12 +215,9 @@ function buildReport(options = {}, ...positional) {
     advisoryNotes,
     advisory_notes: advisoryNotesSnake,
   } = input;
-  const checks = Array.isArray(results)
-    ? results
-    : (Array.isArray(checkResults) ? checkResults : []);
-  const failed = checks.filter((result) => result && result.status !== 0);
-  // Fail closed: no checks (or any non-zero status) means no pass verdict.
-  const verdict = checks.length > 0 && failed.length === 0 ? 'pass' : 'fail';
+  const { checks, verdict } = summarizeResults(
+    Array.isArray(results) ? results : checkResults
+  );
   const notes = advisoryNotes !== undefined ? advisoryNotes : (advisoryNotesSnake || '');
 
   // Advisory notes are never consulted for the verdict or approval flag.
@@ -213,7 +234,7 @@ function buildReport(options = {}, ...positional) {
         '|',
         escapeCell(result.label || 'check'),
         '|',
-        result.status === 0 ? 'PASS' : `FAIL (exit ${result.status})`,
+        formatStatus(result.status),
         '|',
         escapeCell(result.output),
         '|',
@@ -291,6 +312,7 @@ function runReview(argv = process.argv.slice(2), options = {}) {
     return 2;
   }
   const results = Array.isArray(verification && verification.results) ? verification.results : [];
+  const { verdict } = summarizeResults(results);
   const report = buildReport({ type: args.type, head, results, config });
 
   try {
@@ -302,7 +324,8 @@ function runReview(argv = process.argv.slice(2), options = {}) {
   }
   log(`Wrote review report: ${outPath}`);
 
-  return results.some((result) => result && result.status !== 0) ? 1 : 0;
+  // Derive the exit code from the same verdict written to the report.
+  return verdict === 'pass' ? 0 : 1;
 }
 
 function main(argv = process.argv.slice(2)) {
@@ -321,6 +344,7 @@ module.exports = {
   readHead,
   serializeFrontmatter,
   parseFrontmatter,
+  summarizeResults,
   buildReport,
   runReview,
   main,
