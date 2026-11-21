@@ -1,5 +1,6 @@
 const { execFileSync } = require('child_process');
 const readline = require('readline');
+const { validateFiles } = require('../test-driven-development/check-tdd-evidence');
 
 function log(message) {
   console.log(message);
@@ -33,6 +34,30 @@ function getPendingChanges(paths = []) {
 
 function hasChanges(paths = []) {
   return getPendingChanges(paths).length > 0;
+}
+
+// Lists plan task files changed relative to the PR base. Git failures propagate
+// so the backstop fails closed instead of silently skipping validation.
+function getChangedTaskFiles(baseBranch) {
+  const output = execFileSync(
+    'git',
+    ['diff', '--name-only', `${baseBranch}...HEAD`, '--', 'docs/plans'],
+    { encoding: 'utf8' }
+  );
+  return String(output)
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith('docs/plans/') && line.endsWith('.md'));
+}
+
+function checkTddBackstop(baseBranch, options = {}) {
+  const files = getChangedTaskFiles(baseBranch);
+  if (files.length === 0) return { ok: true, files, results: [] };
+
+  const validate = options.validateFiles || validateFiles;
+  const result = validate(files) || {};
+  const results = Array.isArray(result.results) ? result.results : [];
+  return { ok: result.ok === true, files, results };
 }
 
 function commitChanges({ message, paths = [], dryRun = false, verbose = false }) {
@@ -173,6 +198,21 @@ async function run(options = {}) {
           .filter(Boolean)
       : []);
 
+  let tddBackstop;
+  try {
+    const runBackstop = options.checkTddBackstop || checkTddBackstop;
+    tddBackstop = runBackstop(baseBranch, { validateFiles: options.validateFiles }) || {};
+  } catch (error) {
+    throw new Error(`TDD evidence backstop could not list changed task files: ${error.message}`);
+  }
+  if (tddBackstop.ok === false) {
+    const details = (tddBackstop.results || [])
+      .filter((result) => result && !result.ok)
+      .map((result) => `- ${result.file}: ${(result.errors || []).join('; ')}`)
+      .join('\n') || '- one or more changed task files failed TDD evidence validation';
+    throw new Error(`TDD evidence backstop failed:\n${details}`);
+  }
+
   commitChanges({ message: commitMsg, paths, dryRun, verbose });
 
   if (!autoApprove && !dryRun) {
@@ -208,4 +248,10 @@ async function run(options = {}) {
   }
 }
 
-module.exports = { run, hasChanges, getPendingChanges };
+module.exports = {
+  run,
+  hasChanges,
+  getPendingChanges,
+  getChangedTaskFiles,
+  checkTddBackstop,
+};

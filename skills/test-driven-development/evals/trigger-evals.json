@@ -1,0 +1,14 @@
+[
+  { "query": "Write the failing test before implementing this behavior.", "should_trigger": true },
+  { "query": "I wrote code first. How do I get proper red/green evidence?", "should_trigger": true },
+  { "query": "Add a TDD Evidence section to this task status.", "should_trigger": true },
+  { "query": "My test passes but it checks private implementation details.", "should_trigger": true },
+  { "query": "Is this docs-only change exempt from red/green evidence?", "should_trigger": true },
+  { "query": "The validator says my TDD evidence is incomplete.", "should_trigger": true },
+  { "query": "Find the root cause of this failing production bug before patching.", "should_trigger": false },
+  { "query": "Choose the best test runner for a new project.", "should_trigger": false },
+  { "query": "Open a PR and push the branch.", "should_trigger": false },
+  { "query": "Create an implementation plan from the approved solution.", "should_trigger": false },
+  { "query": "Run the baseline checks before we say this is done.", "should_trigger": false },
+  { "query": "Clean up the worktree after the PR merged.", "should_trigger": false }
+]

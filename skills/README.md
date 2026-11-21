@@ -23,7 +23,8 @@ after the PR is merged and is the only stage that removes a worktree.
 Registered skills: `create-worktree-on-change`, `finish-worktree`,
 `idea-discovery`, `implementation`, `implementation-planning`, `review-and-pr`,
 `skill-authoring`, `skill-evals`, `solution-brainstorming`,
-`systematic-debugging`, `verification-before-completion`.
+`systematic-debugging`, `test-driven-development`,
+`verification-before-completion`.
 <!-- skill-registry:end -->
 
 Details for each skill follow below; the marked list above is the registry
@@ -187,6 +188,24 @@ then hand off to `verification-before-completion`. The failing command need not
 be a Jest test; any explicit, repeatable command qualifies. Evidence is cited
 inline, and unreproducible failures are reported rather than patched
 speculatively. This skill adds no helper script or new tooling.
+
+### test-driven-development
+
+Owns the red → green → refactor hard gate for implementation work. For
+executable behavior changes it requires a failing test before production code
+and a `### TDD Evidence` section in task status with the command and observed
+result for both Red and Green, plus a Refactor note. Docs/config-only changes
+use `Exempt: docs/config-only` with a one-line reason.
+
+The minimal validator is:
+
+```bash
+node skills/test-driven-development/check-tdd-evidence.js <task-file>
+```
+
+`implementation` runs it before completing a task; `review-and-pr` reuses it as
+a PR-time backstop over changed plan task files. The skill does not choose a
+test runner, replace `systematic-debugging`, or write production code itself.
 
 ## Shared council protocol
 

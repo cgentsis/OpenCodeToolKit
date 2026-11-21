@@ -41,6 +41,9 @@ or `review-and-pr` for those steps.
   within its "files/areas to change". Do not invent scope.
 - **Verify before done.** Run the verification/tests listed in the task file
   before marking it complete. Fix failures that are within the task's scope.
+- **TDD gate.** For executable-behavior tasks, follow
+  `test-driven-development` and run its validator before recording `complete`.
+  A failing validator blocks completion; do not redefine its evidence format.
 - If acceptance criteria are unverifiable or contradictory, stop and report.
   Do not guess at what "done" means.
 - Record progress truthfully in the task file, including verification evidence.
@@ -59,9 +62,13 @@ or `review-and-pr` for those steps.
    2. Announce the task and its acceptance criteria.
    3. Implement the change, including tests where the task requires them.
    4. Run the listed verification/tests and fix in-scope failures.
-   5. Add a `## Status` section to the task file with `complete`, the date, and
+   5. For executable-behavior changes, follow `test-driven-development` and run
+      `node skills/test-driven-development/check-tdd-evidence.js <task-file>`.
+      If it exits non-zero, keep the task in progress and do not mark it
+      complete.
+   6. Add a `## Status` section to the task file with `complete`, the date, and
       the verification evidence (commands run and their result).
-   6. Report the result, then move to the next task.
+   7. Report the result, then move to the next task.
 4. **Final verification.** Re-run the project's available checks (for example,
    `npm test`) and confirm the architecture document still matches what was
    built. Fix any regressions in scope.
