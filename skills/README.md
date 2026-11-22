@@ -28,7 +28,8 @@ is the only stage that removes a worktree.
 <!-- skill-registry:start -->
 Registered skills: `code-review-gate`, `create-worktree-on-change`,
 `design-review-gate`, `finish-worktree`, `idea-discovery`, `implementation`,
-`implementation-planning`, `review-and-pr`, `review-gate`, `skill-authoring`,
+`implementation-planning`, `pr-lifecycle-monitor`, `review-and-pr`, `review-gate`,
+`skill-authoring`,
 `skill-evals`, `solution-brainstorming`, `specs-review-gate`,
 `systematic-debugging`, `test-driven-development`,
 `verification-before-completion`.
@@ -130,6 +131,45 @@ node run-review-pr.js
 Requires `origin`, and the GitHub CLI (`gh`) installed and authenticated. A dry
 run does not call `gh` or change anything. Use `DRY_RUN=yes node run-review-pr.js`
 to preview.
+
+### pr-lifecycle-monitor
+
+Starts after a successful `review-and-pr` handoff and watches only the PRs
+opened or refreshed by this workflow in the current session. The short-lived
+notification waiter uses `gh event listen --count 1` for review, state, and head
+CloudEvents plus a roughly 10-second `gh api` poll for top-level comments. It
+prints one JSON activity record and exits so the harness can notify the session;
+the agent then refreshes details with `gh api`, proposes an action, and restarts
+the waiter. If event listening fails, polling remains active. The long-running
+`monitor.js` remains available for continuous watching with a fixed 60-second
+poll. Comments are deduplicated by `id` plus `updated_at`.
+
+Default mode emits a structured approval card with Approve, Edit, and Skip
+choices and performs no reply, code change, push, or report refresh without
+approval. Full autonomy is selected once at monitor start, printed in the
+handoff audit line, and limited to replies, code fixes and pushes, and gate/report
+refresh. It never merges a PR or deletes a remote branch.
+
+On verified merge, the monitor invokes `finish-worktree` once for the tracked
+branch and stops. It also stops on PR close or session end using an explicit
+stop hook plus abort signal. Watcher state is in-memory only; the waiter cursor
+is a temporary file in the approved temp directory and is removed on stop,
+merge/close, or session cleanup.
+
+```bash
+node skills/pr-lifecycle-monitor/wait-for-activity.js '<json array of tracked PRs>'
+node skills/pr-lifecycle-monitor/monitor.js '<json array of tracked PRs>'
+```
+
+The argument is a JSON array of tracked PR objects, for example with `number`,
+`branch`, `owner`, `repo`, and `url`. Quote it according to your shell's rules.
+The waiter exits after one activity record; restart it with the same argument
+after handling that activity.
+
+The scripts own deterministic detection, deduplication, authorization checks,
+and cleanup calls (`wait-for-activity.js`, `monitor.js`, `reactions.js`, and
+`cleanup.js`). The skill owns the start prompt, approval card, audit output, and
+stop conditions.
 
 ### create-worktree-on-change
 

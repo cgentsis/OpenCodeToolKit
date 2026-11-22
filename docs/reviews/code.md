@@ -1,30 +1,33 @@
 ---
 type: code
-head: ca412301637472561a60df19e8ce644f022a5ad1
+head: 22dc4ae7951656195b39de1ab7816c3a234052fe
 scripted_verdict: pass
-advisory_notes: |
-  Reviewer: The merge keeps both offerings intact. Both import seams (`checkReviewReport` and TDD `validateFiles`) are present, the skill registry contains all 16 skills, and the merged test file covers both the report gate and the TDD backstop. Scripted checks pass with 11 suites / 97 tests and 29 syntax checks.
-  Reviewer: The PR-time backstop now validates against the updated main base (`pr11-base` at `140a43e`), and the TDD plan index carries a documented docs-only exemption so all changed plan documents pass the evidence validator.
-  Devil's Advocate: The report `head` records the current commit (`ca41230`), so committing the report update itself will make a later freshness check stale until the next gate run. Concrete improvement: make `checkReviewReport` accept a report head that is an ancestor of current HEAD. Advisory only and not a blocker for this PR, which follows the pattern already accepted for PR #10.
-  Devil's Advocate: Merging `main` into `tdd` adds review-gate artifacts to the branch history. Concrete improvement: confirm the final PR file list before merge to ensure no unrelated review-gate files are reintroduced as TDD changes.
+advisory_notes: >-
+  Reviewer: thin event payloads are acceptable as triggers; gh api remains the
+  source of truth. Devil's Advocate: temp cursor residue after an abrupt session
+  end is accepted as ephemeral OS temp state, cleaned on next stop/merge or by
+  the OS. Both roles have no further questions.
 approved: true
 ---
 # Review gate report - code
 
 Scripted verdict: **pass** (authoritative; advisory notes cannot change it).
 Baseline runner: `verification-before-completion`.
-Head: `ca412301637472561a60df19e8ce644f022a5ad1`.
+Head: `22dc4ae7951656195b39de1ab7816c3a234052fe`.
 
 ## Check results
 
 | Check | Result | Output |
 | --- | --- | --- |
-| npm test | PASS | > opencode-toolkit@0.1.0 test > jest --runInBand  HEAD is now at 2d142da initial HEAD is now at 2d142da initial HEAD is now at 2d142da initial  warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it Preparing worktree (new branch 'new-1795301359097') Preparing worktree (new branch 'reuse-1795301359417') Preparing worktree (new branch 'inside-1795301359925')  Test Suites: 11 passed, 11 total Tests:       97 passed, 97 total Snapshots:   0 total Time:        2.234 s, estimated 3 s Ran all test suites. |
+| npm test | PASS | > opencode-toolkit@0.1.0 test > jest --runInBand  HEAD is now at 4a2e037 initial HEAD is now at 4a2e037 initial HEAD is now at 4a2e037 initial  warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it Preparing worktree (new branch 'new-1795340347197') Preparing worktree (new branch 'reuse-1795340347538') Preparing worktree (new branch 'inside-1795340348064')  Test Suites: 13 passed, 13 total Tests:       126 passed, 126 total Snapshots:   0 total Time:        2.429 s, estimated 3 s Ran all test suites. |
 | node --check create-and-review.js | PASS | - |
 | node --check finish-worktree.js | PASS | - |
 | node --check run-review-pr.js | PASS | - |
 | node --check skills/create-worktree-on-change/create-worktree.js | PASS | - |
 | node --check skills/create-worktree-on-change/ensure-worktree.js | PASS | - |
+| node --check skills/pr-lifecycle-monitor/cleanup.js | PASS | - |
+| node --check skills/pr-lifecycle-monitor/monitor.js | PASS | - |
+| node --check skills/pr-lifecycle-monitor/reactions.js | PASS | - |
 | node --check skills/review-and-pr/review-pr.js | PASS | - |
 | node --check skills/review-gate/check-review-report.js | PASS | - |
 | node --check skills/review-gate/run.js | PASS | - |
@@ -38,6 +41,7 @@ Head: `ca412301637472561a60df19e8ce644f022a5ad1`.
 | node --check skills/verification-before-completion/verify-completion.js | PASS | - |
 | node --check test/create-worktree.test.js | PASS | - |
 | node --check test/finish-worktree.test.js | PASS | - |
+| node --check test/pr-lifecycle-monitor.test.js | PASS | - |
 | node --check test/review-gate-alias-validator.test.js | PASS | - |
 | node --check test/review-gate-enforcement.test.js | PASS | - |
 | node --check test/review-gate-runner.test.js | PASS | - |
@@ -47,20 +51,33 @@ Head: `ca412301637472561a60df19e8ce644f022a5ad1`.
 | node --check test/skill-evals.test.js | PASS | - |
 | node --check test/test-driven-development-evidence.test.js | PASS | - |
 | node --check test/verification-before-completion.test.js | PASS | - |
-| git diff --check | PASS | warning: in the working copy of 'docs/reviews/code.md', LF will be replaced by CRLF the next time Git touches it |
+| git diff --check | PASS | warning: in the working copy of 'skills/pr-lifecycle-monitor/SKILL.md', LF will be replaced by CRLF the next time Git touches it |
 
 ## Advisory council appendix
 
 ### Reviewer
 
-- The merge preserves both offerings: the report checker and the TDD evidence validator are both imported, the registry lists all 16 skills, and the merged test file retains both the review-gate enforcement tests and the TDD backstop tests.
-- The TDD tests use the `runWithReport` seam so the backstop is tested independently of the real `docs/reviews/code.md` fixture; dedicated review-gate tests cover the report gate itself.
-- The backstop is now evaluated against the updated `main` base (`pr11-base` at `140a43e`), and the plan index has an explicit docs-only TDD evidence exemption, so all 9 changed plan documents pass validation.
-- Scripted result: 11 Jest suites / 97 tests passed, 29 `node --check` checks passed, `git diff --check` clean.
+Question: Is it acceptable that event payloads are ignored and details are
+refreshed with `gh api`?
+
+User answer: Yes.
+
+Finding: Accepted. The thin CloudEvent is only a wake-up trigger. The waiter
+refreshes PR state and comments through `gh api`, which remains the source of
+truth.
 
 ### Devil's Advocate
 
-- Challenge: the report `head` is `ca41230`, so committing the refreshed report changes HEAD and a later freshness check would be stale. Concrete improvement: make `checkReviewReport` accept a report head that is an ancestor of current HEAD so a report-only commit does not invalidate the gate. Advisory only; the current PR follows the pattern already accepted for PR #10.
-- Challenge: merging `main` into `tdd` brings review-gate artifacts into the branch history. Concrete improvement: verify the final PR file list against `main` before merge so no unrelated review-gate files are reintroduced as TDD changes.
+Challenge: A cursor file could remain in the temp directory if the session ends
+abruptly without a clean stop, which appears to conflict with the no-persistent
+state boundary.
 
-_Advisory only: these notes cannot change `scripted_verdict` or set `approved`._
+User decision: Accepted as ephemeral temp residue.
+
+Finding: Recorded as acceptable. The cursor is not repository state and is not
+carried across sessions intentionally. Cleanup still occurs on normal stop,
+merge/close, and session cleanup paths.
+
+Both advisory roles have no further questions. These notes are advisory only;
+`scripted_verdict` remains `pass` and `approved` remains `false` until explicit
+user approval.

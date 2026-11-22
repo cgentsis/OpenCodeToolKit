@@ -42,6 +42,7 @@
 - `idea-discovery`
 - `implementation`
 - `implementation-planning`
+- `pr-lifecycle-monitor`
 - `review-and-pr`
 - `review-gate`
 - `skill-authoring`
@@ -63,8 +64,9 @@
 - Follow the pipeline in order: `idea-discovery` (what/why) →
   `solution-brainstorming` (how) → `implementation-planning` (plan and
   architecture) → `implementation` (code) → `review-gate` (read-only review
-  report) → `review-and-pr` (commit, push, PR) → `finish-worktree` (clean up
-  locally after the PR merges).
+  report) → `review-and-pr` (commit, push, PR) → `pr-lifecycle-monitor` (watch
+  comments and merge state) → `finish-worktree` (clean up locally after the PR
+  merges).
 - Load `solution-brainstorming` when the user wants to choose an approach, or
   when an idea document already exists and the user asks how to do it.
 - Load `implementation-planning` for an execution plan from a documented

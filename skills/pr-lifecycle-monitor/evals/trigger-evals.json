@@ -1,0 +1,14 @@
+[
+  { "query": "Watch PR 11 for new review comments after you open it.", "should_trigger": true },
+  { "query": "Monitor the PR and tell me when someone comments.", "should_trigger": true },
+  { "query": "React to new comments on the PR I just pushed.", "should_trigger": true },
+  { "query": "Enable full autonomy for PR monitoring.", "should_trigger": true },
+  { "query": "The PR merged; clean up the worktree automatically.", "should_trigger": true },
+  { "query": "Stop watching this PR now.", "should_trigger": true },
+  { "query": "Keep an eye on the PR until it merges.", "should_trigger": true },
+  { "query": "Open a PR for this branch.", "should_trigger": false },
+  { "query": "Commit and push these changes.", "should_trigger": false },
+  { "query": "Review this code before we hand it off.", "should_trigger": false },
+  { "query": "Fix the failing test.", "should_trigger": false },
+  { "query": "Add eval files for a new skill.", "should_trigger": false }
+]
