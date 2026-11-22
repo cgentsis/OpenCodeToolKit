@@ -34,11 +34,14 @@ architecture document.
   checklists, eval files, and a machine-readable alias registry. Three thin alias
   wrappers (`code-review-gate`, `design-review-gate`, `specs-review-gate`) delegate
   to the core. Reports are written under `docs/reviews/`.
-- `skills/pr-lifecycle-monitor/` — a `SKILL.md`, eval files, and a script-backed
-  watcher with in-memory PR state. It starts after `review-and-pr`, watches
-  review/issue comments and merge state via per-PR `gh event listen` plus a fixed
-  one-minute poll, and calls `finish-worktree` on verified merge. It keeps no
-  persistent state and never merges a PR.
+- `skills/pr-lifecycle-monitor/` — a `SKILL.md`, eval files, a script-backed
+  watcher with in-memory PR state, and a short-lived `wait-for-activity.js`
+  notification waiter. It starts after `review-and-pr`, watches review/issue
+  comments and merge state via per-PR `gh event listen` plus a fixed one-minute
+  poll, and calls `finish-worktree` on verified merge. The notification waiter
+  exits on first activity so the harness can notify the session; its dedupe
+  cursor lives only in the approved temp directory and is removed on stop,
+  merge/close, or session cleanup. The skill never merges a PR.
 - Root-level `run-*.js` and `*-worktree.js` scripts — CLI entrypoints for
   script-backed skills. Skills invoke them from the repository root.
 - `test/` — Jest unit tests. Scripts must expose pure helpers where practical
@@ -97,6 +100,12 @@ hard gate, and verification rules. `implementation` is not a council skill.
   end. It defaults to notify-and-propose; full autonomy is an auditable
   start-time choice that permits replies, code fixes/pushes, and gate/report
   refresh but never PR merge or remote deletion.
+- Session notification uses a short-lived waiter rather than a long-running log
+  writer. `wait-for-activity.js` combines `gh event listen` for review/state
+  events with a roughly 10-second top-level comment poll, prints one activity
+  record, and exits so the harness notifies the session. If event listening is
+  unavailable, polling remains active. The caller refreshes full details with
+  `gh api`, proposes an action, and restarts the waiter with an updated cursor.
 
 ## Eval runner conventions
 
@@ -162,9 +171,11 @@ hard gate, and verification rules. `implementation` is not a council skill.
   report is missing, stale, or not approved.
 - A dry run must be side-effect free and must not call `gh`.
 - For `pr-lifecycle-monitor`, unit tests cover dedupe, authorization mode,
-  event/poll overlap, merge detection, and idempotent cleanup. Offline skill
-  evals must pass, and a manual smoke test verifies start/stop behavior without
-  network access by using mocked `gh` and `git` calls.
+  event/poll overlap, merge detection, idempotent cleanup, waiter cursor
+  initialization, first-activity exit, event-failure fallback, and cursor
+  cleanup. Offline skill evals must pass, and a manual smoke test verifies
+  start/stop and notification-exit behavior without network access by using
+  mocked `gh` and `git` calls.
 - The eval runner's offline mode must not call `opencode` or any LLM.
 
 ## Non-goals
@@ -172,4 +183,6 @@ hard gate, and verification rules. `implementation` is not a council skill.
 - No machine-readable JSON report in v1 (deferred).
 - No release or changelog automation.
 - No API layer or runtime service; this repository is skills, scripts, and docs.
-- No persistent PR monitor state, external scheduler, or autonomous PR merge.
+- No repository-persistent or cross-session PR monitor state, external
+  scheduler, or autonomous PR merge. A short-lived waiter cursor in the approved
+  temp directory is allowed only to dedupe within the active session.

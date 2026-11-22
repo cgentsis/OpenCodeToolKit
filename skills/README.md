@@ -135,12 +135,14 @@ to preview.
 ### pr-lifecycle-monitor
 
 Starts after a successful `review-and-pr` handoff and watches only the PRs
-opened or refreshed by this workflow in the current session. It subscribes per
-PR with `gh event listen --follow` for review, state, and head CloudEvents, then
-refreshes details with `gh api`. It also polls `gh api` every fixed 60 seconds to
-catch conversation comments and missed notifications, and deduplicates comments
-by `id` plus `updated_at`. No environment variable, repository config, or other
-pre-use setup is required.
+opened or refreshed by this workflow in the current session. The short-lived
+notification waiter uses `gh event listen --count 1` for review, state, and head
+CloudEvents plus a roughly 10-second `gh api` poll for top-level comments. It
+prints one JSON activity record and exits so the harness can notify the session;
+the agent then refreshes details with `gh api`, proposes an action, and restarts
+the waiter. If event listening fails, polling remains active. The long-running
+`monitor.js` remains available for continuous watching with a fixed 60-second
+poll. Comments are deduplicated by `id` plus `updated_at`.
 
 Default mode emits a structured approval card with Approve, Edit, and Skip
 choices and performs no reply, code change, push, or report refresh without
@@ -150,18 +152,24 @@ refresh. It never merges a PR or deletes a remote branch.
 
 On verified merge, the monitor invokes `finish-worktree` once for the tracked
 branch and stops. It also stops on PR close or session end using an explicit
-stop hook plus abort signal. State is in-memory only.
+stop hook plus abort signal. Watcher state is in-memory only; the waiter cursor
+is a temporary file in the approved temp directory and is removed on stop,
+merge/close, or session cleanup.
 
 ```bash
+node skills/pr-lifecycle-monitor/wait-for-activity.js '<json array of tracked PRs>'
 node skills/pr-lifecycle-monitor/monitor.js '<json array of tracked PRs>'
 ```
 
 The argument is a JSON array of tracked PR objects, for example with `number`,
 `branch`, `owner`, `repo`, and `url`. Quote it according to your shell's rules.
+The waiter exits after one activity record; restart it with the same argument
+after handling that activity.
 
 The scripts own deterministic detection, deduplication, authorization checks,
-and cleanup calls (`monitor.js`, `reactions.js`, and `cleanup.js`). The skill owns
-the start prompt, approval card, audit output, and stop conditions.
+and cleanup calls (`wait-for-activity.js`, `monitor.js`, `reactions.js`, and
+`cleanup.js`). The skill owns the start prompt, approval card, audit output, and
+stop conditions.
 
 ### create-worktree-on-change
 

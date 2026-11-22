@@ -32,12 +32,14 @@ description: >-
 1. **Start after handoff.** Register the PR number, head branch, and initial
    comment cursor in memory only. Ask once whether full autonomy is enabled and
    print the chosen mode in the handoff summary.
-2. **Detect activity.** Open one `gh event listen --follow` subscription per
-   tracked PR for review-submitted, PR-state-changed, and head-changed
-   CloudEvents. Those events are thin notifications, so each event triggers a
-   `gh api` refresh. Also poll `gh api` every fixed 60 seconds to catch
-   conversation comments and missed notifications. No configuration hook is
-   used.
+2. **Detect and notify.** Start the short-lived `wait-for-activity.js` waiter
+   for the tracked PRs. It uses `gh event listen --count 1` for review-submitted,
+   PR-state-changed, and head-changed CloudEvents plus a roughly 10-second `gh
+   api` poll for top-level comments. If event listening fails, polling remains
+   active. The waiter prints one JSON activity record and exits so the harness
+   notifies the session. Refresh full details with `gh api`, handle the activity,
+   update the cursor, and restart the waiter. The long-running `monitor.js`
+   remains available for continuous watching.
 3. **Deduplicate.** Key comment activity by `id` plus `updated_at`. An edited
    comment is new activity; an unchanged comment is not emitted twice.
 4. **React by default with a proposal.** Emit a structured approval card with
@@ -59,14 +61,16 @@ description: >-
 - No autonomous merge, even under full autonomy.
 - No remote branch deletion or other destructive remote mutation.
 - No monitoring of untracked PRs.
-- No persistent state, external scheduler, env var, repo config, or other
-  pre-use setup.
+- No repository-persistent state, external scheduler, env var, repo config, or
+  other pre-use setup. The notification waiter cursor lives only in the approved
+  temp directory and is removed on stop, merge/close, or session cleanup.
 - Worktree-first applies to every file change made in response to a comment.
 - `gh` and `git` calls must be injectable so tests can mock them.
 
 ## Entrypoint and companions
 
 - Scripts: `skills/pr-lifecycle-monitor/monitor.js`,
+  `skills/pr-lifecycle-monitor/wait-for-activity.js`,
   `skills/pr-lifecycle-monitor/reactions.js`, and
   `skills/pr-lifecycle-monitor/cleanup.js`.
 - Task prompts: `skills/pr-lifecycle-monitor/evals/evals.json`.
@@ -78,5 +82,6 @@ description: >-
 ## Verification
 
 Before reporting that monitoring has started or stopped, confirm the observed
-events, emitted proposals or actions, cleanup guard state, and stop output. Do
-not claim a merge was cleaned up unless `finish-worktree` succeeded.
+events, emitted proposals or actions, waiter activity record and cursor state,
+cleanup guard state, and stop output. Do not claim a merge was cleaned up unless
+`finish-worktree` succeeded.
