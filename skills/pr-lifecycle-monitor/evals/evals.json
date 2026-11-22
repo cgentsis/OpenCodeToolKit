@@ -1,0 +1,35 @@
+{
+  "skill_name": "pr-lifecycle-monitor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "After you open PR 11, watch it for review comments and tell me when reviewers respond.",
+      "expected_output": "Starts pr-lifecycle-monitor only after review-and-pr succeeds, registers PR 11 in memory, prompts once for autonomy and prints the chosen mode, opens one gh event listen subscription for the PR, and adds a fixed one-minute gh api poll. It emits no reply or code change before approval.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "A reviewer left a new comment on the tracked PR. What should we do with it?",
+      "expected_output": "Deduplicates by comment id plus updated_at, emits a structured approval card with comment summary, proposed reply, optional code-change plan, and Approve/Edit/Skip choices, then waits. It does not reply, edit, push, or refresh the review report without approval.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Enable full autonomy for the PR and handle comments yourself.",
+      "expected_output": "Records full autonomy from the explicit start-time prompt, prints an audit line, and permits only replies, code fixes and pushes, and gate/report refresh. It never merges the PR, deletes a remote branch, or monitors untracked PRs.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "The tracked PR was just merged. Clean up locally without asking me again.",
+      "expected_output": "Re-reads PR state with gh api to verify merged state and expected head branch, invokes finish-worktree exactly once behind a per-PR guard, emits a completion line, and removes the PR from the watch list. It does not delete remote branches.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Stop monitoring this PR if it closes or when this session ends.",
+      "expected_output": "Uses the explicit stop hook and abort signal to close listeners and timers, leaves no persisted state, and reports a clean stop. A close without merge stops watching without running cleanup.",
+      "files": []
+    }
+  ]
+}

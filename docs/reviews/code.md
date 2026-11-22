@@ -1,25 +1,26 @@
 ---
 type: code
-head: ca412301637472561a60df19e8ce644f022a5ad1
+head: ac5131bc86b8159abb439f519246c17676f9c21d
 scripted_verdict: pass
-advisory_notes: |
-  Reviewer: The merge keeps both offerings intact. Both import seams (`checkReviewReport` and TDD `validateFiles`) are present, the skill registry contains all 16 skills, and the merged test file covers both the report gate and the TDD backstop. Scripted checks pass with 11 suites / 97 tests and 29 syntax checks.
-  Reviewer: The PR-time backstop now validates against the updated main base (`pr11-base` at `140a43e`), and the TDD plan index carries a documented docs-only exemption so all changed plan documents pass the evidence validator.
-  Devil's Advocate: The report `head` records the current commit (`ca41230`), so committing the report update itself will make a later freshness check stale until the next gate run. Concrete improvement: make `checkReviewReport` accept a report head that is an ancestor of current HEAD. Advisory only and not a blocker for this PR, which follows the pattern already accepted for PR #10.
-  Devil's Advocate: Merging `main` into `tdd` adds review-gate artifacts to the branch history. Concrete improvement: confirm the final PR file list before merge to ensure no unrelated review-gate files are reintroduced as TDD changes.
+advisory_notes: >-
+  Reviewer: agent-mediated fix callbacks are acceptable for full autonomy; the
+  CLI remains deterministic and the skill supplies execution. Devil's Advocate:
+  session-only monitoring means a PR merged after the session ends will not be
+  auto-cleaned; the user accepted this as a deliberate limitation. Both roles
+  have no further questions.
 approved: true
 ---
 # Review gate report - code
 
 Scripted verdict: **pass** (authoritative; advisory notes cannot change it).
 Baseline runner: `verification-before-completion`.
-Head: `ca412301637472561a60df19e8ce644f022a5ad1`.
+Head: `ac5131bc86b8159abb439f519246c17676f9c21d`.
 
 ## Check results
 
 | Check | Result | Output |
 | --- | --- | --- |
-| npm test | PASS | > opencode-toolkit@0.1.0 test > jest --runInBand  HEAD is now at 2d142da initial HEAD is now at 2d142da initial HEAD is now at 2d142da initial  warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it Preparing worktree (new branch 'new-1795301359097') Preparing worktree (new branch 'reuse-1795301359417') Preparing worktree (new branch 'inside-1795301359925')  Test Suites: 11 passed, 11 total Tests:       97 passed, 97 total Snapshots:   0 total Time:        2.234 s, estimated 3 s Ran all test suites. |
+| npm test | PASS | > opencode-toolkit@0.1.0 test > jest --runInBand  HEAD is now at dc81d15 initial HEAD is now at dc81d15 initial HEAD is now at dc81d15 initial  warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it Preparing worktree (new branch 'new-1795337983840') Preparing worktree (new branch 'reuse-1795337984170') Preparing worktree (new branch 'inside-1795337984695')  Test Suites: 12 passed, 12 total Tests:       115 passed, 115 total Snapshots:   0 total Time:        2.364 s, estimated 3 s Ran all test suites. |
 | node --check create-and-review.js | PASS | - |
 | node --check finish-worktree.js | PASS | - |
 | node --check run-review-pr.js | PASS | - |
@@ -47,20 +48,33 @@ Head: `ca412301637472561a60df19e8ce644f022a5ad1`.
 | node --check test/skill-evals.test.js | PASS | - |
 | node --check test/test-driven-development-evidence.test.js | PASS | - |
 | node --check test/verification-before-completion.test.js | PASS | - |
-| git diff --check | PASS | warning: in the working copy of 'docs/reviews/code.md', LF will be replaced by CRLF the next time Git touches it |
+| git diff --check | PASS | - |
 
 ## Advisory council appendix
 
 ### Reviewer
 
-- The merge preserves both offerings: the report checker and the TDD evidence validator are both imported, the registry lists all 16 skills, and the merged test file retains both the review-gate enforcement tests and the TDD backstop tests.
-- The TDD tests use the `runWithReport` seam so the backstop is tested independently of the real `docs/reviews/code.md` fixture; dedicated review-gate tests cover the report gate itself.
-- The backstop is now evaluated against the updated `main` base (`pr11-base` at `140a43e`), and the plan index has an explicit docs-only TDD evidence exemption, so all 9 changed plan documents pass validation.
-- Scripted result: 11 Jest suites / 97 tests passed, 29 `node --check` checks passed, `git diff --check` clean.
+Question: Is an agent-mediated fix path acceptable for full autonomy, with
+`monitor.js` providing the deterministic core?
+
+User answer: Yes, agent supplies callbacks.
+
+Finding: Accepted. The CLI owns detection, deduplication, authorization checks,
+and cleanup calls. The skill/agent owns code fixes and gate execution through
+injected callbacks. No source change is required.
 
 ### Devil's Advocate
 
-- Challenge: the report `head` is `ca41230`, so committing the refreshed report changes HEAD and a later freshness check would be stale. Concrete improvement: make `checkReviewReport` accept a report head that is an ancestor of current HEAD so a report-only commit does not invalidate the gate. Advisory only; the current PR follows the pattern already accepted for PR #10.
-- Challenge: merging `main` into `tdd` brings review-gate artifacts into the branch history. Concrete improvement: verify the final PR file list against `main` before merge so no unrelated review-gate files are reintroduced as TDD changes.
+Challenge: Session-only monitoring means a PR merged after the session ends will
+not be auto-cleaned, which is the largest remaining gap against the broader
+"cleanup on merge" goal.
 
-_Advisory only: these notes cannot change `scripted_verdict` or set `approved`._
+User decision: Accepted limitation.
+
+Finding: Recorded as a deliberate session-only trade-off. The existing manual
+`finish-worktree` path remains available in a later session. No source change is
+required.
+
+Both advisory roles have no further questions. These notes are advisory only;
+`scripted_verdict` remains `pass` and `approved` remains `false` until explicit
+user approval.

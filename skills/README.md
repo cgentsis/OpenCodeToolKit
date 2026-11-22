@@ -28,7 +28,8 @@ is the only stage that removes a worktree.
 <!-- skill-registry:start -->
 Registered skills: `code-review-gate`, `create-worktree-on-change`,
 `design-review-gate`, `finish-worktree`, `idea-discovery`, `implementation`,
-`implementation-planning`, `review-and-pr`, `review-gate`, `skill-authoring`,
+`implementation-planning`, `pr-lifecycle-monitor`, `review-and-pr`, `review-gate`,
+`skill-authoring`,
 `skill-evals`, `solution-brainstorming`, `specs-review-gate`,
 `systematic-debugging`, `test-driven-development`,
 `verification-before-completion`.
@@ -130,6 +131,34 @@ node run-review-pr.js
 Requires `origin`, and the GitHub CLI (`gh`) installed and authenticated. A dry
 run does not call `gh` or change anything. Use `DRY_RUN=yes node run-review-pr.js`
 to preview.
+
+### pr-lifecycle-monitor
+
+Starts after a successful `review-and-pr` handoff and watches only the PRs
+opened or refreshed by this workflow in the current session. It subscribes per
+PR with `gh event listen --follow` for review, state, and head CloudEvents, then
+refreshes details with `gh api`. It also polls `gh api` every fixed 60 seconds to
+catch conversation comments and missed notifications, and deduplicates comments
+by `id` plus `updated_at`. No environment variable, repository config, or other
+pre-use setup is required.
+
+Default mode emits a structured approval card with Approve, Edit, and Skip
+choices and performs no reply, code change, push, or report refresh without
+approval. Full autonomy is selected once at monitor start, printed in the
+handoff audit line, and limited to replies, code fixes and pushes, and gate/report
+refresh. It never merges a PR or deletes a remote branch.
+
+On verified merge, the monitor invokes `finish-worktree` once for the tracked
+branch and stops. It also stops on PR close or session end using an explicit
+stop hook plus abort signal. State is in-memory only.
+
+```bash
+node skills/pr-lifecycle-monitor/monitor.js
+```
+
+The scripts own deterministic detection, deduplication, authorization checks,
+and cleanup calls (`monitor.js`, `reactions.js`, and `cleanup.js`). The skill owns
+the start prompt, approval card, audit output, and stop conditions.
 
 ### create-worktree-on-change
 
