@@ -153,8 +153,11 @@ branch and stops. It also stops on PR close or session end using an explicit
 stop hook plus abort signal. State is in-memory only.
 
 ```bash
-node skills/pr-lifecycle-monitor/monitor.js
+node skills/pr-lifecycle-monitor/monitor.js '<json array of tracked PRs>'
 ```
+
+The argument is a JSON array of tracked PR objects, for example with `number`,
+`branch`, `owner`, `repo`, and `url`. Quote it according to your shell's rules.
 
 The scripts own deterministic detection, deduplication, authorization checks,
 and cleanup calls (`monitor.js`, `reactions.js`, and `cleanup.js`). The skill owns

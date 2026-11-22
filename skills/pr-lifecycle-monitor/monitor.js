@@ -338,10 +338,6 @@ function main(argv) {
   return 0;
 }
 
-if (require.main === module) {
-  process.exitCode = main(process.argv.slice(2));
-}
-
 module.exports = {
   POLL_INTERVAL_MS,
   EVENT_TYPES,
@@ -356,3 +352,7 @@ module.exports = {
   defaultFetchComments,
   main,
 };
+
+if (require.main === module) {
+  process.exitCode = main(process.argv.slice(2));
+}

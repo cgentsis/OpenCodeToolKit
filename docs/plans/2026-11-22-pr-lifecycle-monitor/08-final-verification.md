@@ -87,6 +87,13 @@ Verification evidence:
 A fresh `review-gate` report is still required before `review-and-pr`; this task
 verifies implementation only.
 
+Post-PR fix: starting the CLI revealed that `monitor.js` assigned
+`module.exports` after invoking `main()`, so the lazily loaded cleanup handler
+saw empty exports and logged circular-dependency warnings. The export block was
+moved above the `require.main` guard. The same CLI command that previously
+warned now prints only `[pr-monitor] mode propose` and `monitor started for 1
+PR(s)`. `skills/README.md` now documents the required JSON-array argument.
+
 ### TDD Evidence
 
 Exempt: docs/config-only

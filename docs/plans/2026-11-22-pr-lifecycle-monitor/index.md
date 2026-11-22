@@ -91,3 +91,8 @@ runs the full verification bar and a manual smoke test.
   otherwise.
 - After implementation, run `review-gate`, then `review-and-pr`, and hand off
   to `finish-worktree` only after merge.
+
+### TDD Evidence
+
+Exempt: docs/config-only
+Reason: The plan index is documentation; executable task files carry their own Red/Green/Refactor evidence.
